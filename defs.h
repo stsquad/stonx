@@ -102,31 +102,34 @@ extern UL shadow_pc;
 #define SUPERVISOR_MODE ((sr & SR_S))
 #define SR_IMPLEMENTED (SR_T|SR_S|SR_I|MASK_CC)
 
-#define T_TRACE		9
-#define T_PRIVILEGED    8
-#define T_OVERFLOW      7
-#define T_CHK           6
-#define T_DIV0          5
-#define T_ILLEGAL       4
-#define T_BUSERR	2
-#define T_ADDRERR	3
-#define T_LINEA		10
-#define T_LINEF		11
-#define T_VBL           28
-#define T_200Hz         69 /*MFP Timer C       */
-#define T_ACIA		70 /*MFP Keyboard/MIDI */
-#define T_FDC_HDC       71 /*MFP fdc/hdc interrupt (not implemented)*/
-#define T_HBL           72 /*MFP Horizontal blank counter*/
-#define T_RCV_FULL	76
-#define T_TIMERA	77
-#define T_TRAP_0 32
-#define T_TRAP_15 47
-#define T_TRAP_GEMDOS 33
-#define T_TRAP_GEM 34
-#define T_TRAP_BIOS 45
-#define T_TRAP_XBIOS 46
+
+/* 68000 exception numbers: */
+#define CPU_EXCEPTION_BUSERR	2
+#define CPU_EXCEPTION_ADDRERR	3
+#define CPU_EXCEPTION_ILLEGAL	4
+#define CPU_EXCEPTION_DIV0	5
+#define CPU_EXCEPTION_CHK	6
+#define CPU_EXCEPTION_OVERFLOW	7
+#define CPU_EXCEPTION_PRIVILEGED	8
+#define CPU_EXCEPTION_TRACE	9
+#define CPU_EXCEPTION_LINEA	10
+#define CPU_EXCEPTION_LINEF	11
+#define CPU_EXCEPTION_VBL	28
+#define CPU_EXCEPTION_TRAP_0	32
+#define CPU_EXCEPTION_TRAP_GEMDOS	33
+#define CPU_EXCEPTION_TRAP_GEM	34
+#define CPU_EXCEPTION_TRAP_BIOS	45
+#define CPU_EXCEPTION_TRAP_XBIOS	46
+#define CPU_EXCEPTION_TRAP_15	47
+#define CPU_EXCEPTION_200Hz	69  /* MFP Timer C */
+#define CPU_EXCEPTION_ACIA	70  /* MFP Keyboard/MIDI */
+#define CPU_EXCEPTION_FDC_HDC	71  /* MFP fdc/hdc interrupt */
+#define CPU_EXCEPTION_HBL	72  /* MFP Horizontal blank counter */
+#define CPU_EXCEPTION_RCV_FULL	76
+#define CPU_EXCEPTION_TIMERA	77
 
 #define EXCEPTION_VECTOR(_e) ADDR((_e)*4)
+
 
 /* flags - these are set when things happen - the main execute loop polls the flags global*/
 #define F_VBL 		0x0001

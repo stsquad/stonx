@@ -679,7 +679,7 @@ THREAD
 
 define(TRAP,`
 int n=$1;
-ex_trap(T_TRAP_0+n);
+ex_trap(CPU_EXCEPTION_TRAP_0+n);
 ')
 
 define(LINK,`

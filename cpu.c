@@ -322,7 +322,7 @@ static int check_tos3xx(int exception)
     {
 	if ( verbose )
 	    fprintf(stderr, "%s exception raised, pc=%08lx, iw=%04x\n",
-		    exception == T_LINEF ? "Line F" : "ILLEGAL",
+		    exception == CPU_EXCEPTION_LINEF ? "Line F" : "ILLEGAL",
 		    PC_VADDR(pc), LM_UW(PC_MEM(pc)));
 	if (cputype >= 68030)
 	    cleanup(4);
@@ -411,19 +411,21 @@ static void exception (int n, UL nw)
     
     FIX_CCR();
     tsr = sr;
-#if 1 /* 2001-01-25 (MJK): Tracing all "unused" exceptions */
-      /* 2001-02-24 (Thothy): Added Line-F to the list for running TOS 1 */
-    if (verbose && n != T_VBL && n != T_200Hz && n != T_ACIA 
-	&& n != T_TRAP_BIOS && n != T_TRAP_XBIOS && n != T_TRAP_GEMDOS 
-	&& n != T_TRAP_GEM && n != T_LINEA && n!=T_LINEF )
+
+#if 1  /* Tracing all "unused" exceptions */
+    if (verbose && n != CPU_EXCEPTION_VBL && n != CPU_EXCEPTION_200Hz
+	&& n != CPU_EXCEPTION_ACIA && n != CPU_EXCEPTION_TRAP_BIOS
+	&& n != CPU_EXCEPTION_TRAP_XBIOS && n != CPU_EXCEPTION_TRAP_GEMDOS 
+	&& n != CPU_EXCEPTION_TRAP_GEM && n != CPU_EXCEPTION_LINEA
+	&& n != CPU_EXCEPTION_LINEF)
     {
 	fprintf(stderr,
 		"Exception %d at pc=%08lx,sp=%08lx (iw=%04x) -> %08lx\n",
 		n, (long)pc, (long)SP, LM_UW(MEM(pc)), (long)nw);
-
     }
 #endif
-    if (n < T_TRAP_0 || n > T_TRAP_15)
+
+    if (n < CPU_EXCEPTION_TRAP_0 || n > CPU_EXCEPTION_TRAP_15)
     {
 	flags &= ~(F_TRACE0|F_TRACE1); /* no Tracing during exceptions */
 	sr &= ~SR_T;
@@ -455,33 +457,33 @@ void ex_breakpt (void)
 #if MONITOR
 	update_monitor(dreg, sr, pc);
 #endif
-	EXCEPTION(T_ILLEGAL);
+	EXCEPTION(CPU_EXCEPTION_ILLEGAL);
 }
 
 void ex_privileged(void)
 {
-	EXCEPTION(T_PRIVILEGED);
+	EXCEPTION(CPU_EXCEPTION_PRIVILEGED);
 }
 
 void ex_chk(void)
 {
-	EXCEPTION(T_CHK);
+	EXCEPTION(CPU_EXCEPTION_CHK);
 }
 
 void ex_overflow(void)
 {
-	EXCEPTION(T_OVERFLOW);
+	EXCEPTION(CPU_EXCEPTION_OVERFLOW);
 }
 
 void ex_div0(void)
 {
-	EXCEPTION(T_DIV0);
+	EXCEPTION(CPU_EXCEPTION_DIV0);
 }
 
 void ex_linea(void)
 {
-	T(("LINEA Exception %04x at pc=%08lx -> %08lx\n", LM_UW(MEM(pc)), pc, LM_UL(EXCEPTION_VECTOR(T_LINEA))));
-	EXCEPTION(T_LINEA);
+	T(("LINEA Exception %04x at pc=%08lx -> %08lx\n", LM_UW(MEM(pc)), pc, LM_UL(EXCEPTION_VECTOR(CPU_EXCEPTION_LINEA))));
+	EXCEPTION(CPU_EXCEPTION_LINEA);
 }
 
 void ex_linef(void)
@@ -517,11 +519,11 @@ void ex_linef(void)
 	} else
 #endif
 	{
-		if (check_tos3xx(T_LINEF))
+		if (check_tos3xx(CPU_EXCEPTION_LINEF))
 			return;
 	}
 	
-	EXCEPTION(T_LINEF);
+	EXCEPTION(CPU_EXCEPTION_LINEF);
 }
 
 void ex_trap(int n)
@@ -536,14 +538,14 @@ void ex_trap(int n)
     
     switch (n)
     {
-      case T_TRAP_GEMDOS:
+      case CPU_EXCEPTION_TRAP_GEMDOS:
 #if 1
 	  init_gemdos();
 #endif
 	  nw = LM_UL(EXCEPTION_VECTOR(n));
 	  DT(("GEMDOS(%02x) -> %lx\n", nw));
 	  break;
-      case T_TRAP_GEM:
+      case CPU_EXCEPTION_TRAP_GEM:
 	  if (DREG(0) == 115)
 	  {
 	      nw = LM_UL(EXCEPTION_VECTOR(n));
@@ -561,7 +563,7 @@ void ex_trap(int n)
 	      DT(("AES/VDI(%02x,%08x) -> %lx\n", DREG(0), DREG(1), nw));
 	  }
 	  break;
-      case T_TRAP_BIOS:
+      case CPU_EXCEPTION_TRAP_BIOS:
 	  init_cookie();
 	  nw = LM_UL(EXCEPTION_VECTOR(n));
 #if NATIVE_BIOS
@@ -575,13 +577,13 @@ void ex_trap(int n)
 	  }
 #endif  /* NATIVE_BIOS */
 	  break;
-      case T_TRAP_XBIOS:
+      case CPU_EXCEPTION_TRAP_XBIOS:
 	  nw = LM_UL(EXCEPTION_VECTOR(n));
 	  DT(("XBIOS(%02x) -> %lx\n", LM_W(MEM(SP)), nw));
 	  break;
       default:
 	  nw = LM_UL(EXCEPTION_VECTOR(n));
-	  DT(("Trap #%d -> %lx\n", n-T_TRAP_0, nw));
+	  DT(("Trap #%d -> %lx\n", n-CPU_EXCEPTION_TRAP_0, nw));
 	  break;
     }
     exception(n, nw);
@@ -648,7 +650,7 @@ void EXCEPTION (int n)
 
 void TRAP (int n)
 {
-    EXCEPTION(32+n);
+    EXCEPTION(CPU_EXCEPTION_TRAP_0 + n);
 }
 
 void ILLEGAL (void)
@@ -656,7 +658,7 @@ void ILLEGAL (void)
     pc -= 2;
     if ( verbose )
 	fprintf(stderr,"Illegal Exception at %08lx\n",(long)pc);
-    EXCEPTION (T_ILLEGAL);
+    EXCEPTION (CPU_EXCEPTION_ILLEGAL);
 }
 
 
@@ -759,12 +761,10 @@ static void process_flags (void)
 			if (mfp_Timer_A_count)	/* need to generate Timer A interrupts */
 			{
 				mfp_Timer_A_count--;
-#if 0
-fprintf(stderr,"Timer A interrupt\n");
-#endif
+				/*fprintf(stderr,"Timer A interrupt\n");*/
 				if (IPL_OK(6))
 				{
-					EXCEPTION(T_TIMERA);
+					EXCEPTION(CPU_EXCEPTION_TIMERA);
 					SET_IPL(7);
 					return;
 				}
@@ -785,7 +785,7 @@ fprintf(stderr,"Timer A interrupt\n");
 	  {
 	    if (IPL_OK(6))
 	      {
-		EXCEPTION(T_HBL);
+		EXCEPTION(CPU_EXCEPTION_HBL);
 		flags &= ~F_HBL;
 		return;
 	      }
@@ -800,7 +800,7 @@ fprintf(stderr,"Timer A interrupt\n");
 			/* && mfp_prio < 6 */ /* && syst_count != last_acia */)
 	{
 /*		mfp_prio = 6; */
-		EXCEPTION(T_ACIA);
+		EXCEPTION(CPU_EXCEPTION_ACIA);
 	/*	last_acia = syst_count; */
 		SET_IPL(7);
 		flags &= ~F_ACIA;
@@ -808,7 +808,7 @@ fprintf(stderr,"Timer A interrupt\n");
 	else
 	if ((flags & F_RCV_FULL) && IPL_OK(6))
 	{
-		EXCEPTION(T_RCV_FULL);
+		EXCEPTION(CPU_EXCEPTION_RCV_FULL);
 		SET_IPL(7);
 		flags &= ~F_RCV_FULL;
 	}
@@ -819,7 +819,7 @@ fprintf(stderr,"Timer A interrupt\n");
 	}
 	else if (flags & F_TRACE1)
 	{
-		EXCEPTION(T_TRACE);
+		EXCEPTION(CPU_EXCEPTION_TRACE);
 	}
 #if DOUBLE_HZ200
 	if ((flags & (F_200Hz|F_200HzB)) && (IPL_OK(6) /* && mfp_prio < 5 */
@@ -830,7 +830,7 @@ fprintf(stderr,"Timer A interrupt\n");
 	{
 		/* Set it -> Timer C interrupt is being processed */
 		SM_UB(MEM(0xfffa11),LM_UB(MEM(0xfffa11)) | 0x20);
-		EXCEPTION(T_200Hz);
+		EXCEPTION(CPU_EXCEPTION_200Hz);
 		SET_IPL(7);
 #if DOUBLE_HZ200
 		if (flags & F_200Hz)
@@ -849,7 +849,7 @@ fprintf(stderr,"Timer A interrupt\n");
 	        signal_monitor(VBL,NULL);
 	        #endif
 		machine.screen_shifter();
-		EXCEPTION(T_VBL);
+		EXCEPTION(CPU_EXCEPTION_VBL);
 		SET_IPL(5);
 		flags &= ~F_VBL;
 	}
