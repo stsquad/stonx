@@ -1,3 +1,20 @@
+2001-06-29 Frank Naumann
+	* Don't include sys/statvfs.h, default to include sys/vfs.h.
+	
+2001-06-28 Frank Naumann
+	* #ifndef'ed MONITOR define for the case it's declared in config.h.
+	
+2001-06-28 Frank Naumann
+	* Pass through configure defines, conditional include of the right
+	  mount/statfs/vfs header files.
+	
+2001-06-28 Frank Naumann
+	* Small fixes to correctly compile under NetBSD.
+	
+2001-06-28 Frank Naumann
+	* Added .cvsignore files to prevent cvs complaining about generated
+	  or compiled files.
+
 2001-06-21 Alex Bennee
 	* Fixed the MONITOR functionality (but reduced functionality)
 	
