@@ -4,11 +4,15 @@ INSTALLATION INSTRUCTIONS
 In order to compile STonX, you will need the following:
 
  * A C compiler, preferably GNU C (but some ANSI C compilers, like DEC's
-  will do)
+   will do).
+   If you're using GNU C, please note that you need at least version 2.5,
+   older versions will not work. The GNU C version 2.96 is said to be
+   instable, too. If you have problems with 2.96, please downgrade to 2.95
+   again or use the new GCC 3.x instead.
 
- * The M4 macro processor
+ * The M4 macro processor.
 
- * X11R5 or R6 libraries
+ * X11R5 or R6 libraries.
  
 These will suffice to get you started (unless I've forgotten something). 
 
@@ -62,7 +66,7 @@ gdb.
 ADDITIONAL CONFIGURATION OPTIONS
 ================================
 
-After generating the Makefile, look at the file `options.h' (sparsely commented)
+After generating the Makefile, look at the file 'options.h' and 'config.h'
 and see if there is anything you want to change. The only option that you might
 need to change is SMALL (check if this is defined in the `config.h' as well),
 which should be set to 1 if your system has less than 16MB physical memory or

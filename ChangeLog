@@ -1,3 +1,9 @@
+2002-10-05 Thomas Huth
+	* Cleaned up configure.in (Endianness auto detection, extra files
+	  in the config/ subdirectory are no longer needed, config.h is
+	  now generated from config.h.in).
+	* Audio now also works on Linux/PPC.
+
 2001-12-29 Thomas Huth
 	* Merged the shutdown code from the m68k-stuff folder into the cartridge
 	* Removed the menu stuff from the cartridge (it never worked and it is

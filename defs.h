@@ -153,7 +153,7 @@ extern L dreg[];
 #define DREG(_x) dreg[_x]
 #define AREG(_x) dreg[(_x)+8]
 
-#if IS_BIG_ENDIAN
+#if WORDS_BIGENDIAN
 #define DREG_B(_x) &(((B *)dreg)[4*(_x)+3])
 #define DREG_UB(_x) &(((UB *)dreg)[4*(_x)+3])
 #define DREG_W(_x) &(((W *)dreg)[2*(_x)+1])

@@ -8,6 +8,7 @@
 #include "defs.h"
 #include "fonthdr.h"
 #include <stdio.h>
+#include <string.h>
 
 #define S 100000
 #define X(_x) _x = (((_x)&0xff)<<8)|((_x)>>8)
@@ -85,7 +86,7 @@ FILE *out;
 	UW *ho,*hd;
 	int i;
 	FONT_HDR *h = (FONT_HDR *)b;
-#if IS_BIG_ENDIAN
+#if WORDS_BIGENDIAN
 	if ((b[67] & 4) == 0)
 	{
 		fprintf (stderr, "Font header is in Intel format, swapping...\n");
@@ -108,7 +109,7 @@ FILE *out;
 		hd = (UW *)((char *)h+h->dat_table);
 		for (u=ho; u<=ho+h->last_ade-h->first_ade+1; u++)
 			X(*u);
-#if !IS_BIG_ENDIAN
+#if !WORDS_BIGENDIAN
 		for (u=hd; u<hd+h->form_height*h->form_width/2; u++)
 			X(*u);
 #endif

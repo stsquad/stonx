@@ -95,7 +95,7 @@ static INLINE L LU_L(L *s)
 {
 	W *ss = (W *)s;
 	UW *tt = (UW *)s;
-#if CHECK_ALIGNMENT && IS_BIG_ENDIAN
+#if CHECK_ALIGNMENT && WORDS_BIGENDIAN
 	if (((int)s&2)==0)
 		return LOAD_L(s);
 	else
@@ -106,7 +106,7 @@ static INLINE L LU_L(L *s)
 static INLINE UL LU_UL (UL *s)
 {
 	UW *ss = (UW *)s;
-#if CHECK_ALIGNMENT && IS_BIG_ENDIAN
+#if CHECK_ALIGNMENT && WORDS_BIGENDIAN
 	if (((int)s&2)==0)
 		return LOAD_UL(s);
 	else
@@ -124,7 +124,7 @@ static INLINE UL LU_UL (UL *s)
 static INLINE void SU_L (L *d, L v)
 {
 	W *dd = (W *)d;
-#if CHECK_ALIGNMENT && IS_BIG_ENDIAN
+#if CHECK_ALIGNMENT && WORDS_BIGENDIAN
 	if (((int)d&2)==0)
 	{
 		STORE_L(d,v);
@@ -137,7 +137,7 @@ static INLINE void SU_L (L *d, L v)
 static INLINE void SU_UL (UL *d, UL v)
 {
 	UW *dd = (UW *)d;
-#if CHECK_ALIGNMENT && IS_BIG_ENDIAN
+#if CHECK_ALIGNMENT && WORDS_BIGENDIAN
 	if (((int)d&2)==0)
 	{
 		STORE_UL(d,v);
@@ -171,7 +171,7 @@ static INLINE void SU_UL (UL *d, UL v)
 #define SM_B STORE_B
 #define SM_UB STORE_UB
 
-#if IS_BIG_ENDIAN
+#if WORDS_BIGENDIAN
 #define LM_W LOAD_W
 #define LM_UW LOAD_UW
 #define LM_L LU_L
@@ -365,7 +365,7 @@ static INLINE void SM_UL(void *d, UL v)
 }
 #endif
 
-#endif /* IS_BIG_ENDIAN */
+#endif /* WORDS_BIGENDIAN */
 
 /* -------------------------------------------------------------------------- */
 /* Macros for convenience													  */

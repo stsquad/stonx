@@ -61,7 +61,7 @@ int old_smem_size=0;
  * This code assumes short = 16 bit and int = 32 bit and aligned data!
  */
 
-#if IS_BIG_ENDIAN
+#if WORDS_BIGENDIAN
 #define LL(_x) *(_x)
 #define SL(_x,_v) *(_x)=_v
 #else

@@ -19,6 +19,7 @@
 
  */
 
+#include "config.h"
 #include "main.h"
 #include "tosdefs.h"
 #include "mem.h"
@@ -875,7 +876,7 @@ int audio_server(void) {
 	  static long cnt=0, totwr=0;
 	  ssize_t written;
 	  static time_t start=0, now;
-	  static called = 0;
+	  static int called = 0;
 	  
 	  cnt += samples_to_generate;
 	  called++;
@@ -938,12 +939,13 @@ void audio_update(void)
 #ifdef STONX_AUDIO_LINUX
  
 static void LINUX_audio_open(void)
-{	int tmp,ret;	
-	devAudio = open(SOUND_DEVICE, O_RDWR | O_NDELAY, 0);
-  	if (devAudio == -1)
-  	{	fprintf(stderr,"Linux Audio:Can't Open Audio device\n");
+{
+	int tmp,ret;	
+	devAudio = open(SOUND_DEVICE, O_WRONLY | O_NDELAY, 0);
+	if (devAudio == -1)
+	{	fprintf(stderr,"Linux Audio:Can't Open Audio device\n");
 		exit(1);
-  	}
+	}
 
 	/* SETUP No. of sample bits */
 
@@ -1541,8 +1543,10 @@ void audio_open(void)
 #else
 
 	pipe(parent_pipe);
+#ifdef STONX_AUDIO_LINUX
+	fcntl(parent_pipe[1], F_SETFL, O_NDELAY);
+#endif
 
-/*	fcntl(parent_pipe[1], F_SETFL,O_NDELAY);*/
 	pipe(child_pipe);
 	parent_pid = getpid();
 #if 0

@@ -44,7 +44,7 @@ extern GENFUNC_PROTO((*jumptab[]));
 #endif
 
 void execute (UL new_pc)
-#if defined(__GNUC__) && IS_BIG_ENDIAN
+#if defined(__GNUC__) && WORDS_BIGENDIAN
 	 __attribute__ ((noreturn))
 #endif
 	;

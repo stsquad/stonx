@@ -1,5 +1,7 @@
 dnl This is the the source file used to produce the configure script
 AC_INIT(defs.h)
+AC_CONFIG_HEADER(config.h)
+
 version="0.6.7.4"
 AC_SUBST(version)
 echo "Configuring STonX version $version..."
@@ -8,39 +10,30 @@ echo "#define STONX_VERSION_MAJOR 0">>version.h
 echo "#define STONX_VERSION_MINOR 6">>version.h
 echo "#define STONX_PATCH_MAJOR 7">>version.h
 echo "#define STONX_PATCH_MINOR 4">>version.h
+
 #### PROGRAMS
+
 AC_PROG_CC
 AC_ISC_POSIX
 static=
+
 if test "n$GCC" != nyes; then
-cat <<'EOF'
-Note: using gcc may improve the speed of emulation significantly!
-EOF
+echo "Note: using gcc may improve the speed of emulation significantly!"
 else
 copt="-Wall -Wno-unused -O3"
-changequote(,)dnl
-v=`$CC -v 2>&1|grep version|sed 's,.*version \([1-9][0-9.]*\)$,\1,'`
-if test "`echo $v|sed -e 's/\.//g' -e 's/[^0-9]*//' -e 's/ .*//'`" -lt 245; then
-	echo "You have only version $v, please install a newer version of gcc!"
-	exit 1
-else
-	echo "Using gcc version $v"
 fi
-changequote([,])dnl
-fi
+
 AC_MSG_CHECKING(whether shifts are modulo 32)
-AC_TRY_RUN([
-unsigned int r=1;
-main(){return (r<<33)==2;}
-],[
-shwrap32=0
-echo "no (good!)"]
-,[
-shwrap32=1
-echo "yes (yuck)"]
-,[
-echo "cross compiling an emulator? strange person"
-])
+AC_TRY_RUN(
+	[ unsigned int r=1;
+	  main(){return (r<<33)==2;} ],
+	[ shwrap32=0
+	  AC_MSG_RESULT([no (good!)]) ],
+	[ shwrap32=1
+	  AC_MSG_RESULT([yes (yuck)]) ],
+	[ AC_MSG_RESULT([can't check this when cross compiling]) ]
+	)
+
 AC_CHECK_PROGS(MAKEDEPEND,gccmakedep makedepend, no)
 if test "n$MAKEDEPEND" = nno; then
 cat <<'EOF'
@@ -52,7 +45,9 @@ You don't really need this if you're going to compile only once, or without
 altering the code.
 EOF
 fi
+
 #### LIBRARIES
+
 AC_PATH_XTRA
 if test "x$no_x" = yes; then
 	echo "Sorry, I can't find any trace of the X Window installation (X11) on your"
@@ -82,16 +77,25 @@ shm=ok,
 LIBS=$TMPLIBS
 shm=no)
 AC_MSG_RESULT($shm)
+
 #### Functions
-AC_TRY_LINK([#include <stdlib.h>],[atexit(exit);],[echo "atexit() found"],[
-AC_TRY_LINK([#include <stdlib.h>],[on_exit(main);],[echo "using on_exit()"
-def="$def -DUSE_ON_EXIT=1"],
-def="$def -DNO_ATEXIT=1"
-echo "You need either atexit() or on_exit() for STonX to work correctly!")])
+
+AC_MSG_CHECKING([for atexit])
+AC_TRY_LINK(
+ [#include <stdlib.h>],[atexit(exit);],[AC_MSG_RESULT([atexit() found])],
+ [AC_TRY_LINK([#include <stdlib.h>],[on_exit(main);],
+  [ AC_MSG_RESULT([using on_exit()])
+   def="$def -DUSE_ON_EXIT=1"],
+  def="$def -DNO_ATEXIT=1"
+  AC_MSG_WARN([You need either atexit() or on_exit() for STonX to work correctly!]))]
+ )
+
 if test $shwrap32 = 1; then
-def="$def -DSHWRAP32"
+ def="$def -DSHWRAP32"
 fi
+
 #### Optional modules/features
+
 AC_ARG_ENABLE(monitor,
 [  --enable-monitor	Enable mini ICE type monitor (slows emulation)],
 enable_monitor=$enableval,
@@ -108,127 +112,151 @@ enable_debug=$enableval,
 enable_debug=no)
 
 #### SYSTEM
-echo "Running config.guess to determine your system type..."
+
+AC_MSG_CHECKING([your system type with config.guess])
 t=`./config.guess`
-echo 'You seem to have a `'$t"'"
-endian=dunno
-conf="config/generic.h"
+AC_MSG_RESULT([$t])
+AC_C_BIGENDIAN
+
 case $t in
 sparc-sun-sunos*)
-	conf="config/sparc-sun-sunos.h"
-if test "n$CC" = ngcc; then
-	regs="-fomit-frame-pointer"
-else
-	regs=
-	copt="-O4"
-fi
+	AC_DEFINE(SRREG, "%g5")
+	AC_DEFINE(PCREG, "%g6")
+	AC_DEFINE(NZREG, "%g7")
+	AC_DEFINE(STONX_AUDIO_SPARC)
+	if test "n$CC" = ngcc; then
+	  regs="-fomit-frame-pointer"
+	else
+	  regs=
+	  copt="-O4"
+	fi
 	;;
 sparc-sun-solaris*)
 	echo "A Sun with Solaris 2.x"
-	conf="config/sparc-sun-solaris.h"
-if test "n$CC" = ngcc; then
-	regs="-fomit-frame-pointer"
-else
-	regs=
-	copt="-O"
-fi
+	AC_DEFINE(SRREG, "%g5")
+	AC_DEFINE(PCREG, "%g6")
+	AC_DEFINE(NZREG, "%g7")
+	AC_DEFINE(STONX_AUDIO_SPARC)
+	AC_DEFINE(SOLARIS)
+	AC_DEFINE(SMALL,1)
+	if test "n$CC" = ngcc; then
+	  regs="-fomit-frame-pointer"
+	else
+	  regs=
+	  copt="-O"
+	fi
 	;;
-i*86-*-linux)
-	echo 'Umm... OK, this should work.'
-	echo 'NOTE: To enable Linux SVGAlib support call configure with --enable-svga'
-	regs="-ffixed-ebx -ffixed-ebp -fomit-frame-pointer -m486 -malign-jumps=2 -malign-functions=4"
+*-linux*)
+	AC_DEFINE(JOYSTICK,1)
+	AC_DEFINE(STONX_JOYSTICK_LINUX)
+	AC_DEFINE(STONX_AUDIO_LINUX)
+	case $t in
+	i*86-*)
+	  echo 'NOTE: To enable SVGAlib support call configure with --enable-svga'
+	  AC_DEFINE(NZREG, "%ebx")
+	  AC_DEFINE(PCREG, "%ebp")
+	  regs="-ffixed-ebx -ffixed-ebp -fomit-frame-pointer -m486 -malign-jumps=2 -malign-functions=4"
+	  ;;
+	powerpc*)
+	  regs="-fomit-frame-pointer"
+	  ;;
+	*)
+	  regs=""
+	esac
 	copt="$copt -funroll-loops"
-	conf="config/x86-linux.h"
 	;;
-i*86-*bsd*)
- 	echo 'A 80x86-based BSD box...'
- 	regs="-fomit-frame-pointer -ffixed-ebx -ffixed-ebp"
- 	conf="config/x86-bsd.h"
+*bsd*)
+ 	echo 'A BSD box...'
+	case $t in
+	i*86-*)
+	  AC_DEFINE(NZREG, "%ebx")
+	  AC_DEFINE(PCREG, "%ebp")
+ 	  regs="-fomit-frame-pointer -ffixed-ebx -ffixed-ebp"
+	  ;;
+	*)
+	  regs=""
+	esac
+	# Most BSD systems support OSS audio, too:
+	AC_DEFINE(STONX_AUDIO_LINUX)
 	libs=-lossaudio
  	;;
 mips-sgi-irix*)
 	echo 'Wow, an SGI!'
-	conf="config/mips-sgi-irix.h"
+	AC_DEFINE(SRREG, "s0")
+	AC_DEFINE(PCREG, "s1")
+	AC_DEFINE(NZREG, "s2")
+	AC_DEFINE(STONX_AUDIO_SGI)
 	defs="$defs -D_BSD_SIGNALS"
 	xtra="$xtra -laudio -lm"
-if test "n$CC" = ngcc; then
-	regs="-fomit-frame-pointer"
-else
-	regs=
-	copt="-O2"
-fi
+	if test "n$CC" = ngcc; then
+	  regs="-fomit-frame-pointer"
+	else
+	  regs=
+	 copt="-O2"
+	fi
 	;;
 mips-dec-ultrix*)
 	echo "A DECstation..."
-	conf="config/decstation.h"
-if test "n$CC" = ngcc; then
-	regs="-fomit-frame-pointer"
-else
-	regs=
-	copt="-O2"
-fi
+	AC_DEFINE(SRREG, "s0")
+	AC_DEFINE(PCREG, "s1")
+	AC_DEFINE(NZREG, "s2")
+	if test "n$CC" = ngcc; then
+	  regs="-fomit-frame-pointer"
+	else
+	  regs=
+	  copt="-O2"
+	fi
 	;;
 hppa*-hp-hpux)
 	echo "A HP with HP-UX and PA-RISC processor"
-	conf="config/hpux.h"
-if test "n$CC" = ngcc; then
-	regs="-fomit-frame-pointer"
-	static="-static"
-else
-	echo "You need gcc on HP-UX, sorry!"
-	exit 1
-fi
+	AC_DEFINE(SRREG, "r6")
+	AC_DEFINE(PCREG, "r7")
+	AC_DEFINE(NZREG, "r8")
+	AC_DEFINE(STONX_AUDIO_HP)
+	defs="$defs -Dsigned"
+	if test "n$CC" = ngcc; then
+	  regs="-fomit-frame-pointer"
+	  static="-static"
+	else
+	  AC_MSG_ERROR([You need gcc on HP-UX, sorry!])
+	fi
 	;;
 alpha-dec-osf*)
 	echo "Wow, an Alpha/OSF!"
+	AC_DEFINE(SRREG, "$9")
+	AC_DEFINE(PCREG, "$10")
+	AC_DEFINE(NZREG, "$11")
 	xtra="$xtra -ldnet_stub -lots"
-	conf="config/alpha.h"
-if test "n$CC" = ngcc; then
-	regs="-fomit-frame-pointer"
-else
-	regs=
-	copt="-std1 -O4 -Olimit 9999"
-fi
+	if test "n$CC" = ngcc; then
+	  regs="-fomit-frame-pointer"
+	else
+	  regs=
+	  copt="-std1 -O4 -Olimit 9999"
+	fi
 	;;
 m68k-next-bsd)
 	echo "A NeXTStation with NEXTSTEP and MC680x0 processor"
-	conf="config/next68k.h"
-if test "n$CC" = ngcc; then
-	regs="-posix -fomit-frame-pointer"
-else
-	regs="-posix"
-	copt="-O3"
-fi
-	;;
-*)	echo "STonX has not been ported to this system ($t), please let me"
-	echo "know if you can compile and run it successfully!"
-	echo "Determining this system's endianness and short/int sizes..."
-if test "n$CC" = ngcc; then
-	regs="-fomit-frame-pointer"
-else
-	regs=
-	copt="-O2"
-fi
-	$CC -o conftest config/endianness.c
-	if endian=`./conftest`; then
-		echo "Sizes are OK..."
+	AC_DEFINE(PCREG, "a6")
+	AC_DEFINE(NZREG, "d7")
+	if test "n$CC" = ngcc; then
+	  regs="-posix -fomit-frame-pointer"
 	else
-		echo "Sorry, sizeof(short),sizeof(int) must be 2,4!"
-		exit 1
+	  regs="-posix"
+	  copt="-O3"
 	fi
-	rm -f ./conftest
-case $endian in 
-	big)	echo "You're using a big-endian processor, very good!";;
-	little)	echo "You're using a little-endian processor, too bad...";;
-	*)	
-	echo "Your machine seems to have a weird byte-ordering format, which I can't deal"
-	echo "with - sorry!."
 	;;
-esac
-esac
-case $endian in 
-	big) def="$def -DIS_BIG_ENDIAN=1";;
-	little)	def="$def -DIS_BIG_ENDIAN=0";;
+*)
+	echo "STonX has not been ported to this system ($t),"
+	echo "please let us know if you can compile and run it successfully!"
+	AC_MSG_CHECKING([this system's 'short' and 'int' sizes])
+	AC_TRY_RUN(
+	[ main()
+	 { if(sizeof(short) != 2 || sizeof(int) != 4) return 1;
+	   return 0; }],
+	[AC_MSG_RESULT(ok)],
+	[AC_MSG_ERROR([Sorry, sizeof(short) must be 2 and sizeof(int) must be 4!])],
+	[AC_MSG_WARN([Can't run test program for sizeof(int) and sizeof(short)!])]
+	)
 esac
 
 AC_C_INLINE
@@ -295,18 +323,13 @@ AC_MSG_RESULT($statfs)
 def="$def -D$statfs"
 
 #
-# Now we can create a config.h based on system + enabled features
+# Now we can enable the wanted features
 #
-
-echo "Creating config.h"
-
-rm -f config.h
-cat $conf > config.h
 
 echo "Checking if you want monitor funtionality : $enable_monitor"
 
 if test "$enable_monitor" = "yes"; then
-	echo "#define MONITOR 1" >> config.h
+	AC_DEFINE(MONITOR)
 	mon_objs="monitor.o di_dis.o"
 	mon_files="monitor.c di_dis.c"
 fi

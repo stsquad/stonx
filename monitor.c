@@ -19,10 +19,6 @@
 
 #include "monitor.h"
 
-#ifdef WATCH
-#undef WATCH
-#endif
-#define WATCH 1
 
 /* local global vars - used for various breakpoints */
 int in_monitor=0;
