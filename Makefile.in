@@ -34,10 +34,7 @@ REGS= @regs@
 OPT=@copt@
 
 # Additional header file paths
-INC=-I. @X_CFLAGS@
-
-#Linux:
-INC=-I. @X_CFLAGS@
+INC=@X_CFLAGS@
 
 # Non X Library files (not needed on linux, so far just -lossaudio on bsd's)
 LIBS=@libs@
@@ -67,7 +64,7 @@ SCC=@SCC@ $(REGS)
 # Preprocessor
 CPP=@CPP@
 
-CFLAGS= $(INC) $(AINC) $(DEF) $(ADEF) $(OPT) $(SFLAGS)
+CFLAGS= $(INC) $(DEF) $(OPT) $(SFLAGS)
 
 MINTOBJS= mint/mint_comm.o mint/mint_stonxfs_fs.o mint/mint_stonxfs_dev.o\
 	 mint/mint_interface.o mint/mint_serial.o mint/mint_misc.o \
