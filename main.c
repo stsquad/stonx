@@ -597,6 +597,7 @@ int main (int argc, char *argv[])
 	scr_width=scr_def[2].w;
 	scr_height=scr_def[2].h;
 	scr_planes=1;
+	shiftmod = 2;
     }
     print_timing();
 #ifndef _WIN32
