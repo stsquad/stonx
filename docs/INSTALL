@@ -35,9 +35,8 @@ or, alternatively,
 
 if the former doesn't work.
 
-This will generate a `Makefile', link `config.h' to the appropriate file from
-the `config' subdirectory and generate dependencies for the Makefile. It will
-also generate some more sources.
+This will create a `Makefile', a `config.h' and some more files. It will also
+generate dependencies for the Makefile.
 
 If the `configure' script fails, please contact the STonX mailing list at
  stonx-development@lists.sourceforge.net
@@ -47,11 +46,12 @@ The configure script now accepts a couple of extra options which are:
 
 --enable-monitor
 
-This allows the MONITOR code to be compiled and linked in. The monitor functionality is useful
-if you are trying to work problems with the code running on the emulator, either to work out
-what the emualtor needs to provide or to debug the program running on STonX. This option will
-slow down the emulation and you probably don't want it unless you want to have a go at reading
-68000 assembly
+This allows the MONITOR code to be compiled and linked in. The monitor
+functionality is useful if you are trying to work problems with the code
+running on the emulator, either to work out what the emualtor needs to provide
+or to debug the program running on STonX. This option will slow down the
+emulation and you probably don't want it unless you want to have a go at
+reading 68000 assembly.
 
 --enable-svga (untested)
 
@@ -59,9 +59,9 @@ This enables the SVGA option of stonx.
 
 --enable-debug
 
-This defangs the compiler options to provide an executable that gdb can actually read and
-understand. Again you probably don't want this unless you want to debug STonX behaviour with
-gdb.
+This defangs the compiler options to provide an executable that gdb can
+actually read and understand. Again you probably don't want this unless you
+want to debug STonX behaviour with gdb.
 
 
 ADDITIONAL CONFIGURATION OPTIONS
