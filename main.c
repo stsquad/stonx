@@ -597,8 +597,8 @@ int main (int argc, char *argv[])
     {
 	if ( ( hc = get_gemdos_drive( boot_dev + 'A' ) ) == NULL )
 	{
-	    fprintf(stderr, "You can only boot tos.img from a gemdos boot drive.\n"
-		    "Use option --help to get more information.\n");
+	    fprintf(stderr, "Could not load the TOS ROM image file tos.img.\n"
+		    "Use option -tos to specify one or --help to get more information.\n");
 	    return 1;
 	}
 	if ( ( tos_name = malloc( strlen( hc ) + 10 ) ) == NULL )

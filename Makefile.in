@@ -98,18 +98,17 @@ DIST=$(CSRC) am.h mem.h debug.h defs.h main.h xlib_vdi.h tosdefs.h\
 	ikbd.h screen.h Keysyms Makefile.in \
 	docs/AUTHORS docs/DEBUGGING docs/INSTALL docs/PROGRAMS \
 	docs/README docs/RELEASE_NOTES docs/TOS-VERSIONS \
-	configure fill.xbm iotab1.c iotab2.c config/*.[hc]\
-	config.guess cartridge.img \
+	configure fill.xbm iotab1.c iotab2.c config/*.[hc] config.guess \
 	tosfonts.c fonthdr.h fnttobdf.c data/makefonts.sh \
 	blitter.c audio.c mem.c memarray.c bios.c \
 	options.h gemdos.h COPYING configure.in\
-	cartridge.S 68000.def gen.c gendefs.m4 gendefs.h emulator.h\
+	68000.def gen.c gendefs.m4 gendefs.h emulator.h\
 	amdefs.h genhead.c ui.c m4_to_c.sh cpu.h stonx.Keysyms \
 	atari/FLOPPY-4MB atari/bench1.pas atari/bench1.prg atari/final.tos \
-	fdc.c\
+	cartridge/cartridge.img cartridge/cartridge.s cartridge/cartridge.h \
 	syscalls.h utils.h iofuncs.h blitter.h native.h audio.h io.h ui.h \
-	fdc.h cookie.h svgalib_vdi.h x.h \
-	svga.h cartridge.h midi.c midi.h sfp.h toserror.h \
+	fdc.c fdc.h cookie.h svgalib_vdi.h x.h \
+	svga.h midi.c midi.h sfp.h toserror.h \
 	DEPENDENCIES RULES CONFIGVARS PHONY ChangeLog \
 	mint/BINFILES mint/SRCFILES mint/EXTRAFILES mint/MISCFILES \
 	mint/Makefile \
@@ -153,7 +152,7 @@ INSTBIN=@bindir@
 .c.i:	
 	$(CPP) $(CFLAGS) $< > $@
 
-all:	rekursive configure Makefile stonx @svga_target@ cartridge.img \
+all:	rekursive configure Makefile stonx @svga_target@ cartridge/cartridge.img \
 	fnttobdf tosfonts
 
 rekursive: $(SUBDIRS)
@@ -162,7 +161,7 @@ rekursive: $(SUBDIRS)
 	done
 
 Makefile:	Makefile.in
-	configure
+	./configure
 
 configure:	configure.in
 	autoconf
@@ -230,26 +229,30 @@ dist:	$(DIST)
 	mv /tmp/$(DIR).tar.gz .
 
 bindist:
-	(cd /tmp/$(DIR); rm -rf *.o *.c *.h m4_to_c.sh *.m4 68000.def Makefile* config* cartridge.S data fnttobdf fill.xbm fonts-done.stmp gen kludge tosfonts)
+	(cd /tmp/$(DIR); rm -rf *.o *.c *.h m4_to_c.sh *.m4 68000.def Makefile* config* cartridge/cartridge.s data fnttobdf fill.xbm fonts-done.stmp gen kludge tosfonts)
 
 install:
 	install -c -s stonx $(INSTBIN)/stonx
 	mkdir -p $(STONXDIR)/gemdos_c
-	cp cartridge.img $(STONXDIR)/gemdos_c
+	cp cartridge/cartridge.img $(STONXDIR)
 	@if test -f /etc/stonxrc; then \
 	echo "/etc/stonxrc already exists, creating /etc/stonxrc.new" >&2; \
-	echo "fs C:$(STONXDIR)/gemdos_c" > /etc/stonxrc.new ; \
-	echo "vbl 2 refresh 2 chunky" >> /etc/stonxrc.new ; \
+	echo "cartridge $(STONXDIR)/cartridge.img" > $(sysconfdir)/stonxrc.new ; \
+	echo "tos $(STONXDIR)/tos.img" >> $(sysconfdir)/stonxrc.new ; \
+	echo "fs C:$(STONXDIR)/gemdos_c" >> $(sysconfdir)/stonxrc.new ; \
+	echo "vbl 2 refresh 2 chunky" >> $(sysconfdir)/stonxrc.new ; \
 	echo "boot c" >> /etc/stonxrc.new ; \
 	else \
-	echo cartridge $(PWD)/cartridge.img > $(sysconfdir)/stonxrc ; \
-	echo "fs C:$(STONXDIR)/gemdos_c" > $(sysconfdir)/stonxrc ; \
+	echo "cartridge $(STONXDIR)/cartridge.img" > $(sysconfdir)/stonxrc ; \
+	echo "tos $(STONXDIR)/tos.img" >> $(sysconfdir)/stonxrc ; \
+	echo "fs C:$(STONXDIR)/gemdos_c" >> $(sysconfdir)/stonxrc ; \
 	echo "vbl 2 refresh 2 chunky" >> $(sysconfdir)/stonxrc ; \
 	echo "boot c" >> $(sysconfdir)/stonxrc ; \
 	fi ; \
 	echo "To complete installation you should copy tos.img to:" ; \
-        echo "    " $(STONXDIR)/gemdos_c/ ; \
+        echo "    " $(STONXDIR) ; \
 	echo "And you should copy your prefered Keysyms file to /etc/stonx.Keysyms ."
+
 depend: $(DEPSRC) 
 	cp Makefile Makefile.bak
 	chmod +w Makefile

@@ -11,7 +11,6 @@
 
 #if NATIVE_BIOS      /* Only include this file if really necessary */
 
-#include "mem.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,12 +19,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#include "mem.h"
 #include "gemdos.h"
 #include "debug.h"
 #include "main.h"
 #include "utils.h"
 #include "tosdefs.h"
-#include "cartridge.h"
+#include "cartridge/cartridge.h"
 #include "xlib_vdi.h"
 
 #define TRACE_BIOS 1

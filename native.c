@@ -3,7 +3,9 @@
  * STonX is free software and comes with NO WARRANTY - read the file
  * COPYING for details
  */
+ 
 #include "defs.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,6 +14,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
+
 #include "debug.h"
 #include "main.h"
 #include "tosdefs.h"
@@ -21,8 +25,7 @@
 #include "xlib_vdi.h"
 #include "screen.h"
 #include "utils.h"
-#include "cartridge.h"
-#include <string.h>
+#include "cartridge/cartridge.h"
 #include "mint/mint_interface.h"
 
 #ifndef MINT_STONXFS
@@ -393,6 +396,27 @@ void gemdos_post(void)
 {
 }
 
+
+#if 0
+/* *** Print string from emulated side *** */
+/* This is normally not needed at all, but sometimes usefull if you */
+/* want to debug a ST program... */
+void write_native(char * addr)
+{
+    char buf[1024];
+    int n;
+
+    buf[0]=0;   /* to be save */
+    buf[80]=0;   /* to be save */
+
+    for(n=0;n<1024;n++) {       /* Fill string char by char */
+        if ((buf[n]=LM_UB(MEM(addr++))) == 0) break;
+    }
+    fprintf(stderr,"%s", buf );
+}
+#endif
+
+
 void call_native(UL as, UL func)
 {
 #if 0
@@ -401,7 +425,7 @@ void call_native(UL as, UL func)
 	switch (func)
 	{
 	case 0:
-		/* was write_native */
+		/* write_native((char *)LM_UL(MEM(as))); */
 		break;
 	case 1:
 		disk_rw((char *)MEM(as));
