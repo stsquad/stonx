@@ -11,7 +11,7 @@
 #define L int
 #define W short
 #define UB unsigned char
-#define B char
+#define B signed char
 
 #ifndef INLINE
 #define INLINE
