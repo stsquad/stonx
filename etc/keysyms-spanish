@@ -1,0 +1,151 @@
+#Keysym PARA CONFIGURACIÓN DE TECLADO EN ESPAÑOL DE STONX. ESTE FICHERO 
+#PERMITE QUE STONX FUNCIONE CON LOS MISMOS JUEGOS DE CARACTERES Y MAPA
+#DE TECLADO QUE UTILIZA ARANYM.
+#HA DE UTILIZARSE EN COMBINACIÓN CON CLOCKY Y EL FICHERO worstxes.kbd como
+#COMO MAPEADOR DE TECLADO. TENIENDO TODO ESTO INSTALADO, EL TECLADO PC 
+#FUNCIONARÁ POR PRIMERA VEZ CORRECTAMENTE, Y SERÁ EL PRIMER EMULADOR EN QUE
+#LO HARÁ 100%
+#
+#
+#
+#28-11-2003, Gabriel Huertas, Licencia GPL
+#
+#
+#
+# Format: X-Keysym as displayed in 'xmodmap -pke', ST-Keycode using the names
+# from ikbd.c. Note that only X-Keysyms without modifiers can be used (those
+# immediately after the '=' in the 'xmodmap -pke' output).
+#
+# These are not likely to need modification:
+1		ST_1
+2		ST_2
+3		ST_3
+4		ST_4
+5		ST_5
+6		ST_6
+7		ST_7
+8		ST_8
+9		ST_9
+0		ST_0
+F1		ST_F1
+F2		ST_F2
+F3		ST_F3
+F4		ST_F4
+F5		ST_F5
+F6		ST_F6
+F7		ST_F7
+F8		ST_F8
+F9		ST_F9
+F10		ST_F10
+Q		ST_Q
+W		ST_W
+E		ST_E
+R		ST_R
+T		ST_T
+Y		ST_Y
+U		ST_U
+I		ST_I
+O		ST_O
+P		ST_P
+A		ST_A
+S		ST_S
+D		ST_D
+F		ST_F
+G		ST_G
+H		ST_H
+J		ST_J
+K		ST_K
+L		ST_L
+Z		ST_Z
+X		ST_X
+C		ST_C
+V		ST_V
+B		ST_B
+N		ST_N
+M		ST_M
+space		ST_SPACE
+#
+# These may need to be adapted to your keyboard, since some of the X Keysyms
+# may not be used (mapped) by your System (e.g. Help, Undo)
+#
+KP_Insert	ST_KP_0
+KP_End		ST_KP_1
+KP_Down		ST_KP_2
+KP_Next		ST_KP_3
+KP_Left		ST_KP_4
+KP_Begin	ST_KP_5
+KP_Right	ST_KP_6
+KP_Home		ST_KP_7
+KP_Up		ST_KP_8
+KP_Prior	ST_KP_9
+KP_Divide	ST_KP_DIV
+KP_Multiply	ST_KP_MULT
+Alt_L		ST_ALT
+#para el ST las dos teclas alternate serían la misma
+Escape		ST_ESC
+minus		ST_SLASH
+#equal		ST_EQUAL modificada para español
+exclamdown	ST_EQUAL
+#la línea a continuación está modificada para teclado español
+masculine	ST_GRAVE
+BackSpace	ST_BS
+Delete		ST_DELETE
+Insert		ST_INSERT
+Tab		ST_TAB
+#bracketlefti	ST_SQ_OPEN cambiada para español
+dead_grave	ST_SQ_OPEN
+#bracketright	ST_SQ_CLOSE cambiada para español
+plus		ST_SQ_CLOSE
+Up		ST_UP
+Left		ST_LEFT
+Right		ST_RIGHT
+Down		ST_DOWN
+Control_L	ST_CONTROL
+#Añadido opcional, el ST no distingue entre dos teclas de control
+Control_R	ST_CONTROL
+Shift_L		ST_LSH
+Shift_R		ST_RSH
+Caps_Lock	ST_CAPSLOCK
+#semicolon	ST_SEMIC cambio para español
+ntilde		ST_SEMIC
+#apostrophe	ST_APOST #cambiada para compatibilizar con aranym
+#apostrophe	ST_SLASH
+apostrophe	ST_MINUS
+#backslash	ST_BACKSL cambio para español
+ccedilla	ST_BACKSL
+comma		ST_COMMA
+period		ST_DOT
+#slash		ST_SLASH LÍNEA CAMBIADA PARA CONFIGURACIÓN EN ESPAÑOL
+#dead_acute	ST_SLASH #cambiada para compatibilizar con aranym
+dead_acute	ST_APOST #cambiada para compatibilizar con aranym
+#dead_acute	ST_MINUS
+Return		ST_RETURN
+KP_Enter	ST_KP_ENTER
+KP_Subtract	ST_KP_MINUS
+KP_Add		ST_KP_PLUS
+#Help		ST_HELP 
+#"Help" no existe en xmodmap
+#cambiado para español
+F11		ST_HELP
+F12		ST_UNDO
+#Undo		ST_UNDO
+#"Undo" no existe en xmodmap
+#
+# modificado para español
+#less		ST_ISO Ésta es la tecla maldita!!
+# THE DAMMED KEY!! THE ONE TO THE LEFT OF Z, NOT INCLUDED IN ALL US KEYBOARDS.
+# WE NEED WITH SCANCODE 60 FOR WORKING PROPERLY IN SPANISH.
+# En español necesitamos esta asignación para producir < y > . La tecla a
+# la izquierda de la z del teclado no existe en todos los teclados
+# americanos. El atari original asignaba el scancode 60.
+Home		ST_HOME
+KP_Delete	ST_KP_DOT
+#teclas añadidas que no venían en la configuración original de este fichero en stonx
+Next		ST_PG_UP
+Prior		ST_PG_DN
+End		ST_END
+# La siguiente tecla se añade para poder remapearla con clocky y aceder a
+# los símbolos < y > , en realidad esto es una chapucilla. La tecla que
+# elegimos corresponde a la apertura de paréntesis del teclado numérico,
+# actualmente sin uso por no venir implementada en los teclados de PC
+less		ST_KP_OPEN
