@@ -200,7 +200,7 @@ extern L dreg[];
 #define UNSET_Z() do{if(nz_save==0)nz_save=1;}while(0)
 #define UNSET_N() do{if(nz_save<0)nz_save=1;}while(0)
 #define SET_Z() nz_save=0
-#define SET_N() nz_save=-1;
+#define SET_N() nz_save=-1
 #define FIX_CCR() do{ sr &= ~(MASK_CC_Z|MASK_CC_N);\
 	if ((nz_save) < 0) sr |= MASK_CC_N; else if (nz_save==0) sr |= MASK_CC_Z;\
 	} while(0);

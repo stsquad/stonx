@@ -4,9 +4,6 @@
  * COPYING for details
  */
 
-/* When the bug in gcc 2.6.0-2.6.3 is fixed, define as 'static' ... */
-#define STATIC static
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -662,41 +659,68 @@ void ILLEGAL (void)
     EXCEPTION (T_ILLEGAL);
 }
 
-/* All BCD functions are UNTESTED! */
-#define BCD2DEC(_x) ((((_x)&0xf0)>>4)*10+((_x)&0xf))
-#define DEC2BCD(_x) ((((_x)/10)<<4)+((_x)%10))
+
+/* All BCD functions are not very well tested! */
 
 B BCD_ADD(B a, B b)
 {
-	int q,w;
-	sr &= ~MASK_CC|MASK_CC_X;
-	q = BCD2DEC(a);
-	w = BCD2DEC(b);
-	w += q + GET_X_BIT();
-	if (w >= 100)
+	int t;
+
+	sr &= ~(MASK_CC_X|MASK_CC_C);
+
+	t = (a & 0xF) + (b & 0xF) + GET_X_BIT();
+	if (t >= 0xA)
+		t += 0x6;
+
+	t += (a & 0xF0) + (b & 0xF0);
+	if (t >= 0xA0)
+		t += 0x60;
+
+	if (t & 0xFF00)
 	{
-		w -= 100;
+		t &= 0x0FF;
 		sr |= MASK_CC_X|MASK_CC_C;
 	}
-	if (w != 0) UNSET_Z();	/* ???? */
-	return DEC2BCD(w);
+	if (t != 0)
+		UNSET_Z();
+	if (t & 0x80)
+		SET_N();
+
+	return t;
 }
 
 B BCD_SUB(B a, B b)
 {
-	int q,w;
-	sr &= ~MASK_CC|MASK_CC_X;
-	q = BCD2DEC(a);
-	w = BCD2DEC(b);
-	w -= q + GET_X_BIT();
-	if (w < 0)
+	signed int t, hi;
+
+	sr &= ~(MASK_CC_X|MASK_CC_C);
+
+	t = (b & 0xF) - (a & 0xF) - GET_X_BIT();
+	hi = (b & 0xF0) - (a & 0xF0);
+	if (t < 0)
 	{
-		w += 100;
+		t += 10;
+		hi -= 0x10;
+	}
+	if (hi < 0)
+	{
+		hi -= 0x60;
+	}
+	t += hi;
+
+	if (t & 0xFF00)
+	{
+		t &= 0x0FF;
 		sr |= MASK_CC_X|MASK_CC_C;
 	}
-	if (w != 0) UNSET_Z();	/* ???? */
-	return DEC2BCD(w);
+	if (t != 0)
+		UNSET_Z();
+	if (t & 0x80)
+		SET_N();
+
+	return t;
 }
+
 
 /* -------------------- SPECIAL EVENTS DISPATCHER --------------------------- */
 /* The process_flags function is called every instruction loop */
