@@ -83,7 +83,7 @@ MOREOBJ= code0000.o code0300.o code0600.o code0900.o code1200.o code1500.o
 CSRC=$(OBJ:.o=.c) $(SVGAOBJ:.o=.c) $(XOBJ:.o=.c) gen.c
 DIST=$(CSRC) am.h mem.h debug.h defs.h main.h xlib_vdi.h tosdefs.h\
 	ikbd.h screen.h options.h gemdos.h \
-	etc/keysyms  etc/keysyms-alternative etc/keysyms-german \
+	etc/keysyms  etc/keysyms-alternative etc/keysyms-german etc/keysyms-spanish \
 	docs/AUTHORS docs/DEBUGGING docs/INSTALL docs/README docs/RELEASE_NOTES \
 	docs/TOS-VERSIONS ChangeLog COPYING TODO stonx.spec.in \
 	configure configure.in config.guess config.h.in Makefile.in \
