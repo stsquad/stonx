@@ -47,6 +47,7 @@ typedef struct command_tag
 
 /* external vars */
 extern int instruction_count;
+extern L pc;
 
 /* local functions */
 /* interactive */
@@ -97,9 +98,21 @@ void signal_monitor (monitor_signal_type reason,void *data)
 
   if (reason&signal_break)
     {
-      /* May put more advanced processing here?*/
-      in_monitor=1;
-      fprintf (stderr,"Signal %x triggered break.\n",reason);
+      switch (reason)
+	{
+	case GEMDOS:
+	  {
+	    fprintf(stderr,"Gemdos call (%d) caused break\n",(W *) data);
+	    in_monitor=1;
+	    break;
+	  }
+	default:
+	  {
+	    in_monitor=1;
+	    fprintf (stderr,"Signal %x triggered break.\n",reason);
+	    break;
+	  }
+	}
     }
 }
 
@@ -191,6 +204,13 @@ int update_monitor (UL *regs, int sr, int pcoff)
 		  set_breakpoint(cmdline);
 		  break;
 		}
+	      case 'C':
+	      case 'c':
+		{
+		  change_memory(cmdline);
+		  break;
+		}
+
 	      case 'D':
 	      case 'd':
 		{
@@ -314,6 +334,11 @@ static int eval_symbol (char symbol[])
 	{
 	  address = DREG(symbol[2]-'0');
 	}
+      else if (symbol[1]=='P' || symbol[1]=='p')
+	{
+	  /* assume @pc */
+	  address = pc;
+	}
       else
 	{
 	  fprintf (stderr,"Scanning map file (if such a thing existed!)\n");
@@ -351,13 +376,20 @@ static void print_help (void)
 
 static dump_bytes (int ptr, int count)
 {
+  int end;
   int i;
 
-  for (i=0;i<(count/2);i++)
-    { 
-      fprintf (stdout,"%04x ", LM_UW(MEM(ptr+i)));
-    }
-  fprintf (stdout,"\n");
+  end = ptr+count;
+
+    do {
+      fprintf (stdout,"[%08x] ",ptr);
+      for (i=0;i<8&&ptr<end;i++)
+	{
+	  fprintf (stdout,"%04x ", LM_UW(MEM(ptr)));
+	  ptr=ptr+2;
+	}
+      fprintf (stdout,"\n");
+    } while (ptr<end);
 }
 
 /*
@@ -439,8 +471,52 @@ static void dump_memory (command *cmd)
     {
       fprintf (stderr,"Need at least an address!\n");
     }
+}
+
+/*
+** format STMON> c <address|symbol> <value> [B|W|L]
+*/
+
+static void change_memory (command *cmd)
+{
+  int address;
+  L  value;
+
+  if (cmd->args>2)
+    {
+      address = eval_symbol (cmd->cmdlist[1]);
+      value = eval_symbol (cmd->cmdlist[2]);
+      if (cmd->args>3) 
+	{
+	  switch (*(cmd->cmdlist[3]))
+	    {
+	    case 'b':
+	    case 'B':
+	      {
+	      SM_B(MEM(address),value);
+	      break;
+	      }
+	    case 'L':
+	      case 'l':
+		{
+		  SM_UL(MEM(address),value);
+		  break;
+		}
+	    default:
+	      {
+		SM_UW(MEM(address),value);
+		break;
+	      }
+	    }
+	}
+    }
+  else
+    {
+      fprintf(stderr,"c address value [b|w|l]\n");
+    }
 
 }
+
 
 /*
 ** Format STMON> a [address|symbol] [length]
