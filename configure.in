@@ -144,6 +144,7 @@ i*86-*bsd*)
  	echo 'A 80x86-based BSD box...'
  	regs="-fomit-frame-pointer -ffixed-ebx -ffixed-ebp"
  	conf="config/x86-bsd.h"
+	libs=-lossaudio
  	;;
 mips-sgi-irix*)
 	echo 'Wow, an SGI!'
@@ -342,6 +343,7 @@ AC_SUBST(mon_objs)
 AC_SUBST(mon_files)
 AC_SUBST(svga_target)
 AC_SUBST(svga_objs)
+AC_SUBST(libs)
 AC_SUBST(MAKEDEPEND)
 SCC="$CC"
 AC_SUBST(SCC)

@@ -1,19 +1,34 @@
+# STonX Top Level Makefile
 #
-# FIXME:  This is a very, very ugly Makefile.in!!!
-# FIXME:  We should throw away the autoconf things and make it using
-# FIXME:  CONFIGVARS, RULES, BINFILES, SCRFILES, EXTRAFILES, MISCFILES
-# FIXME:  like we've done at subdirectory mint and m68k-stuff.
-# FIXME:  In that case we not longer need a Makefile.in or configure.
-# FIXME:  It would be nice to have also a 'make config' or
-# FIXME:  'make menueconfig' or even 'make xconfig'.
-# FIXME:  We also could make a complete automake, autoconf configuration.
-# FIXME:  This would be a lot of work and there are lots of people thinking
-# FIXME:  that would be a mess.
+# This Makefile has a bit of history but for now all you need to know
+# is that the configure script creates the Makefile from Makefile.in
+# subsituting things surrounded by @ symbols with stuff the configure
+# script works out.
+#
+# This Makefile.in is very ugly and could be improved. Two options exist
+#
+# Option 1 
+# "We should throw away the autoconf things and make it using
+# CONFIGVARS, RULES, BINFILES, SCRFILES, EXTRAFILES, MISCFILES
+# like we've done at subdirectory mint and m68k-stuff.
+# In that case we not longer need a Makefile.in or configure.
+# It would be nice to have also a 'make config' or
+# 'make menueconfig' or even 'make xconfig'."
+#
+# Option 2
+# "We also could make a complete automake, autoconf configuration.
+# This would be a lot of work and there are lots of people thinking
+# that would be a mess."
+#
+# In recent times option 2 has been followed. Not due to any grand
+# insight on how to fix it up, just that autoconf was there and some
+# bits needed tweaking. The Makefile still awaits a true makefile guru
+# to sprinkle some pixie dust on it. - AJB
 #
 
 .SUFFIXES: 	.m4 .img .S .prof .i .cs .tab
 
-# Paths and dirs (passed in bu configure script or modified with -e option (for rpms))
+# Paths and dirs (passed in by configure script or modified with -e option (for rpms))
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 sysconfdir = @sysconfdir@
@@ -35,18 +50,18 @@ INC=-I. @X_CFLAGS@
 #Linux:
 INC=-I. @X_CFLAGS@
 
-# X11 library path
+# Non X Library files (not needed on linux, so far just -lossaudio on bsd's)
+LIBS=@libs@
+
+# X11 library path - I'm sure not everything here is X related?
 XLIBS=@X_LIBS@ @X_PRE_LIBS@ -lXext -lX11 @X_EXTRA_LIBS@ @xtra@
 SFLAGS=
 
-#Monitor support, call configure with --enable-monitor
+#Monitor support, call configure with --enable-monitor, otherwise these will blank
 MON_OBJS = @mon_objs@
 MON_FILES = @mon_files@
 
-#Linux:
-#XLIBS=@X_LIBS@ -L../../binutils-2.4 -lopcodes -lbfd -liberty -lncurses
-
-#Linux SVGALIB support, call configure with --enable-svga
+#Linux SVGALIB support, call configure with --enable-svga, otherwise these will be blank
 SVGALIBS=-lvgagl -lvga 
 SVGAOBJ=@svga_objs@
 SVGATARGET=@svga_target@
@@ -139,7 +154,7 @@ INSTBIN=@bindir@
 	$(CPP) $(CFLAGS) $< > $@
 
 all:	rekursive configure Makefile stonx @svga_target@ cartridge.img \
-	#fnttobdf tosfonts fonts
+	fnttobdf tosfonts
 
 rekursive: $(SUBDIRS)
 	@for subdir in $(SUBDIRS) ; do \
@@ -179,7 +194,7 @@ cpu.o:	code.c
 
 stonx:	$(OBJ) $(XOBJ) $(MOREOBJ)
 	$(SCC) @static@ -o $@ $(OBJ) $(XOBJ) $(MOREOBJ) $(SUBOBJS) \
-               $(XLIBS)
+               $(LIBS) $(XLIBS)
 
 stonvga: $(OBJ) $(SVGAOBJ) $(MOREOBJ)
 	$(SCC) @static@ -o $@ $(OBJ) $(SVGAOBJ) $(MOREOBJ) $(SUBOBJS) \
@@ -219,7 +234,6 @@ bindist:
 
 install:
 	install -c -s stonx $(INSTBIN)/stonx
-	install -c -s stonvga $(INSTBIN)/stonvga
 	mkdir -p $(STONXDIR)/gemdos_c
 	cp cartridge.img $(STONXDIR)/gemdos_c
 	@if test -f /etc/stonxrc; then \

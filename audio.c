@@ -45,7 +45,7 @@ extern int snd_porta;
 #include <linux/sched.h>
 #include <linux/unistd.h>
 #endif
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__OpenBSD__)
 /* NetBSD's Linux API emulation, require -lossaudio too */
 #include <soundcard.h>
 #define SOUND_DEVICE "/dev/audio"

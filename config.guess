@@ -180,6 +180,9 @@ EOF
     i[3456]86:NetBSD:*:*)
 	echo ${UNAME_MACHINE}-unknown-netbsd${UNAME_RELEASE}
 	exit 0 ;;
+    *:OpenBSD:*:*)
+	echo ${UNAME_MACHINE}-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
     i[3456]86:FreeBSD:*:*)
 	echo ${UNAME_MACHINE}-unknown-freebsd${UNAME_RELEASE}
 	exit 0 ;;

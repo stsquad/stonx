@@ -1939,6 +1939,7 @@ i*86-*bsd*)
  	echo 'A 80x86-based BSD box...'
  	regs="-fomit-frame-pointer -ffixed-ebx -ffixed-ebp"
  	conf="config/x86-bsd.h"
+	libs=-lossaudio
  	;;
 mips-sgi-irix*)
 	echo 'Wow, an SGI!'
@@ -2026,21 +2027,21 @@ case $endian in
 esac
 
 echo $ac_n "checking for inline""... $ac_c" 1>&6
-echo "configure:2030: checking for inline" >&5
+echo "configure:2031: checking for inline" >&5
 if eval "test \"`echo '$''{'ac_cv_c_inline'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   ac_cv_c_inline=no
 for ac_kw in inline __inline__ __inline; do
   cat > conftest.$ac_ext <<EOF
-#line 2037 "configure"
+#line 2038 "configure"
 #include "confdefs.h"
 
 int main() {
 } $ac_kw foo() {
 ; return 0; }
 EOF
-if { (eval echo configure:2044: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:2045: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   ac_cv_c_inline=$ac_kw; break
 else
@@ -2073,12 +2074,12 @@ fi
 
 echo "Looking for some functions..."
 echo $ac_n "checking for strdup""... $ac_c" 1>&6
-echo "configure:2077: checking for strdup" >&5
+echo "configure:2078: checking for strdup" >&5
 if eval "test \"`echo '$''{'ac_cv_func_strdup'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2082 "configure"
+#line 2083 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char strdup(); below.  */
@@ -2101,7 +2102,7 @@ strdup();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2105: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2106: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_strdup=yes"
 else
@@ -2122,12 +2123,12 @@ def="$def -DNO_STRDUP"
 fi
 
 echo $ac_n "checking for bzero""... $ac_c" 1>&6
-echo "configure:2126: checking for bzero" >&5
+echo "configure:2127: checking for bzero" >&5
 if eval "test \"`echo '$''{'ac_cv_func_bzero'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 2131 "configure"
+#line 2132 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char bzero(); below.  */
@@ -2150,7 +2151,7 @@ bzero();
 
 ; return 0; }
 EOF
-if { (eval echo configure:2154: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2155: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_bzero=yes"
 else
@@ -2171,10 +2172,10 @@ def="$def -DNO_BZERO"
 fi
 
 echo $ac_n "checking if statfs() and stat() work as I want them to""... $ac_c" 1>&6
-echo "configure:2175: checking if statfs() and stat() work as I want them to" >&5
+echo "configure:2176: checking if statfs() and stat() work as I want them to" >&5
 statfs=no
 cat > conftest.$ac_ext <<EOF
-#line 2178 "configure"
+#line 2179 "configure"
 #include "confdefs.h"
 
 #include <sys/types.h>
@@ -2185,7 +2186,7 @@ struct statvfs s; struct stat st; statvfs("/",&s); stat("/",&st);
  return s.f_bavail+s.f_blocks+st.st_blksize;
 ; return 0; }
 EOF
-if { (eval echo configure:2189: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2190: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   statfs=STATFS_USE_STATVFS
 else
@@ -2195,7 +2196,7 @@ fi
 rm -f conftest*
 if test $statfs = no; then
 cat > conftest.$ac_ext <<EOF
-#line 2199 "configure"
+#line 2200 "configure"
 #include "confdefs.h"
 
 #include <sys/types.h>
@@ -2207,7 +2208,7 @@ struct statfs s; struct stat st; statfs("/",&s); stat("/",&st);
  return s.f_bavail+s.f_blocks+st.st_blksize;
 ; return 0; }
 EOF
-if { (eval echo configure:2211: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2212: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   statfs=STATFS_USE_VFS
 else
@@ -2218,7 +2219,7 @@ rm -f conftest*
 fi
 if test $statfs = no; then
 cat > conftest.$ac_ext <<EOF
-#line 2222 "configure"
+#line 2223 "configure"
 #include "confdefs.h"
 
 #include <sys/types.h>
@@ -2230,7 +2231,7 @@ struct statfs s; struct stat st; statfs("/",&s); stat("/",&st);
  return s.f_bavail+s.f_blocks+st.st_blksize;
 ; return 0; }
 EOF
-if { (eval echo configure:2234: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2235: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   statfs=STATFS_USE_MOUNT
 else
@@ -2241,7 +2242,7 @@ rm -f conftest*
 fi
 if test $statfs = no; then
 cat > conftest.$ac_ext <<EOF
-#line 2245 "configure"
+#line 2246 "configure"
 #include "confdefs.h"
 
 #include <sys/types.h>
@@ -2253,7 +2254,7 @@ struct statfs s; struct stat st; statfs("/",&s); stat("/",&st);
  return s.f_bavail+s.f_blocks+st.st_blksize;
 ; return 0; }
 EOF
-if { (eval echo configure:2257: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:2258: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   statfs=STATFS_USE_STATFS_VMOUNT
 else
@@ -2315,6 +2316,7 @@ fi
 echo "Creating Makefile from Makefile.in"
 
 echo "REGS:$regs, DEF:$def, XTRA:$xtra"
+
 
 
 
@@ -2494,6 +2496,7 @@ s%@mon_objs@%$mon_objs%g
 s%@mon_files@%$mon_files%g
 s%@svga_target@%$svga_target%g
 s%@svga_objs@%$svga_objs%g
+s%@libs@%$libs%g
 s%@SCC@%$SCC%g
 
 CEOF

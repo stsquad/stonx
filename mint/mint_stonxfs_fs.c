@@ -920,15 +920,15 @@ UL mint_fs_pathconf( MINT_FCOOKIE *dir, W which )
 	  break;
       case TOS_DP_NAMEMAX:
 	  dirname = mint_makefilename( dir->index, NULL, NULL );
-#ifndef __NetBSD__
+#if defined(__NetBSD__) || defined(__OpenBSD__)
+	      retval = 256;
+#else
 /* XXX workaround
  * add a f_namelen check to configure to be clean
  */
 	  if ( (retval = pathconf( dirname, _PC_NAME_MAX )) < 0 &&
 	       !statfs( dirname, &sfs ) && sfs.f_namelen > 0 )
 	      retval = sfs.f_namelen;
-#else
-	      retval = 256;
 #endif
 	  break;
       case TOS_DP_ATOMIC:
