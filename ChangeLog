@@ -1,3 +1,12 @@
+2001-02-27 Thomas Huth
+
+        * Removed the TOS_1 define and added code, so that STonX can now
+          use TOS 1 and TOS 2 Roms without being recompiled (changed the
+          files main.c, main.h, cpu.c, mem.h, defs.h and options.h)
+        * Updated load_file() in utils.c
+        * Set white_pixel and black_pixel variables in xlib_vdi.c so that
+          vsc_form() (-> the mouse pointer form) now works.
+
 2001-02-20  Markus Kohm, STonX-0.6.7.3
 
         * Bugfixes in x.c

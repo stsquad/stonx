@@ -65,9 +65,16 @@ int got_drive=0;
 int chunky=0;
 int timer_a=0;
 int no_cart=0;
+int fullscreen=0;
 char *cartridge_name=NULL;
 char *tos_name=NULL;
-int fullscreen=0;
+
+int tos1;   		/* TRUE when using TOS version 1, FALSE for TOS version 2 */
+long tosstart, tosstart1, tosstart2, tosstart4;		/* They point to the beginning of the TOS ROM (and to tosstart-1, -2 and -4) */
+long tosend, tosend1, tosend2, tosend4;			/* These variables point to the end of the TOS ROM */
+long romstart, romstart1, romstart2, romstart4;		/* Either the beginning of the TOS ROM (TOS 2) or the beginning of the cartridge rom (TOS 1) */
+long romend, romend1, romend2, romend4;			/* The end of the ROM */
+
 
 void process_args (int argc, char *argv[], int is_rc)
 {
@@ -432,6 +439,66 @@ int stonx_exit(void)
     return 0;
 }
 
+
+
+int load_tos(void)
+{
+    short tosversion;
+    FILE *fh;
+    char buf[48];
+    fh = fopen(tos_name, "rb");
+    if( fh==NULL )
+     {
+	fprintf (stderr, "Error: Can not open `%s'!\n", tos_name);
+	exit(3);
+     }
+    if( fread(buf, 1, 48, fh) != 48 )
+     {
+	fprintf (stderr, "Error: Can not read `%s'!\n", tos_name);
+	exit(3);
+     }
+    fclose(fh);
+
+    tosversion = LM_UW(&buf[2]);
+    tosstart = LM_UL(&buf[8]);
+    if (verbose)
+     {
+      fprintf(stderr, "TOS version: %x.%x\n", tosversion>>8, tosversion&0x0FF);
+      fprintf(stderr, "TOS ROM address: %lx\n",(long)tosstart);
+     }
+
+    switch(tosversion>>8)
+     {
+      case 1: tosend=tosstart + 192*1024L; tos1=TRUE; break;
+      case 2: tosend=tosstart + 256*1024L; tos1=FALSE; break;
+      default: fprintf(stderr, "Unknown TOS version!\n"); exit(-1); break;
+     }
+    load_file (tos_name, (char *)MEM(tosstart)); 
+
+    tosstart=TRIM(tosstart);
+    tosend=TRIM(tosend);
+    tosstart1=tosstart-1;  tosstart2=tosstart-2;  tosstart4=tosstart-4;
+    tosend1=tosend-1;  tosend2=tosend-2;  tosend4=tosend-4;
+    if(tos1)
+      {
+       romstart=TRIM(CARTSTART);   romstart1=TRIM(CARTSTART-1);
+       romstart2=TRIM(CARTSTART-2);   romstart4=TRIM(CARTSTART-4);
+       romend=tosend;   romend1=tosend1;
+       romend2=tosend2;   romend4=tosend4;
+      }
+     else
+      {
+       romstart=tosstart;   romstart1=tosstart1;
+       romstart2=tosstart2;   romstart4=tosstart4;
+       romend=TRIM(CARTEND);   romend1=TRIM(CARTEND-1);
+       romend2=TRIM(CARTEND-2);  romend4=TRIM(CARTEND-4);
+      }
+
+    return 0;
+}
+
+
+
 int main (int argc, char *argv[])
 {
     char *h;
@@ -512,6 +579,7 @@ int main (int argc, char *argv[])
     init_fdc();
     init_sfp();
     init_mem();
+
     if ( !tos_name )
     {
 	if ( ( hc = get_gemdos_drive( boot_dev + 'A' ) ) == NULL )
@@ -531,7 +599,8 @@ int main (int argc, char *argv[])
 	    *h++ = '/';
 	strcpy( h, "tos.img" );
     }	
-    load_file (tos_name,(char *)MEM(TOSSTART)); 
+    load_tos();
+
     if (!no_cart)
     {
 	if ( !cartridge_name ) {
@@ -575,7 +644,7 @@ int main (int argc, char *argv[])
     init_cpu();
     if ( verbose )
 	fprintf(stderr,"Starting emulation...\n");
-    execute_start(TOSSTART);
+    execute_start(tosstart);
     return stonx_exit();
 }
 

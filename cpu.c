@@ -117,20 +117,12 @@ B LS_B (UL s)
 	if (!SUPERVISOR_MODE) BUS_ERROR (s, 1);
 #if PROTECT_ROM
 #if SMALL
-#if TOS_1
-	else if (s > 0x800 && s < TRIM(CARTSTART))
-#else
-	else if (s > 0x800 && s < TRIM(TOSSTART))
-#endif
+	else if (s > 0x800 && s <= romstart1 )
 	{
 		BUS_ERROR(s, 1);
 	}
 #endif 
-#if TOS_1
-	else if (s < TRIM(CARTEND))
-#else
-	else if (s < TRIM(TOSEND) || (s >= TRIM(CARTSTART) && s < TRIM(CARTEND)))
-#endif
+	else if ( (tos1 && s < TRIM(CARTEND)) || (!tos1 && (s <= tosend1 || (s >= TRIM(CARTSTART) && s < TRIM(CARTEND)) )) )
 		return LM_B(ADDR(s));
 #endif
 	else if (s < TRIM(IOTAB1_LO)) BUS_ERROR (s, 1);
@@ -159,21 +151,14 @@ W LS_W (UL s)
 	{
 #if PROTECT_ROM
 #if SMALL
-#if TOS_1
-		if (s > 0x800 && s < TRIM(CARTSTART-1))
-#else
-		if (s > 0x800 && s < TRIM(TOSSTART-1))
-#endif
+		if (s > 0x800 && s <= romstart2) )
 		{
 			BUS_ERROR(s, 1);	/* bus err or addr. err 1st?*/
 		}
 		else
 #endif
-#if TOS_1
-		if (s < TRIM(CARTEND-1))
-#else
-		if (s < TRIM(TOSEND-1) || (s >= TRIM(CARTSTART) && s < TRIM(CARTEND-1)))
-#endif
+		if ( (tos1 && (s <= TRIM(CARTEND-2)) )
+		     || (!tos1 && (s <= tosend2 || (s >= TRIM(CARTSTART) && s <= TRIM(CARTEND-2)) ) ) )
 			return LM_W(ADDR(s));
 		else
 #endif
@@ -193,19 +178,12 @@ L LS_L (UL s)
 	{
 #if PROTECT_ROM
 #if SMALL
-#if TOS_1
-		if (s > 0x800 && s < TRIM(CARTSTART-3))
-#else
-		if (s > 0x800 && s < TRIM(TOSSTART-3))
-#endif
+		if (s > 0x800 && s <= romstart4 )
 			BUS_ERROR(s, 1);	/* bus err or addr. err 1st?*/
 		else
 #endif
-#if TOS_1
-		if (s < TRIM(CARTEND-3))
-#else
-		if (s < TRIM(TOSEND-3) || (s >= TRIM(CARTSTART) && s < TRIM(CARTEND-3)))
-#endif
+		if ( (tos1 && (s <= TRIM(CARTEND-4)) )
+		     || (!tos1 && (s <= (tosend4) || (s >= TRIM(CARTSTART) && s <= TRIM(CARTEND-4)) ) ) )
 			return LM_L(ADDR(s));
 		else
 #endif
@@ -324,8 +302,8 @@ static INLINE void US_UL (UL x)
 /* ---- */
 int is_tos3xx(void)
 {
-	return TOS_VERSION(TOSSTART) >= 0x300 &&
-		TOS_VERSION(TOSSTART) < 0x400;
+	return TOS_VERSION(tosstart) >= 0x300 &&
+		TOS_VERSION(tosstart) < 0x400;
 }
 
 static int check_tos3xx(int exception)
@@ -418,10 +396,10 @@ static void exception (int n, UL nw)
     FIX_CCR();
     tsr = sr;
 #if 1 /* 2001-01-25 (MJK): Tracing all "unused" exceptions */
-    if (n != T_VBL && n != T_200Hz && n != T_TRAP_BIOS && n != T_ACIA 
-	&& n != T_LINEA && n != T_TRAP_XBIOS && n != T_TRAP_GEMDOS 
-	&& n != T_TRAP_GEM
-	&& verbose)
+      /* 2001-02-24 (Thothy): Added Line-F to the list for running TOS 1 */
+    if (verbose && n != T_VBL && n != T_200Hz && n != T_ACIA 
+	&& n != T_TRAP_BIOS && n != T_TRAP_XBIOS && n != T_TRAP_GEMDOS 
+	&& n != T_TRAP_GEM && n != T_LINEA && n!=T_LINEF )
     {
 	fprintf(stderr,
 		"Exception %d at pc=%08lx,sp=%08lx (iw=%04x) -> %08lx\n",
@@ -1005,18 +983,13 @@ void init_cpu (void)
 #endif
 	memset ((char *)dreg, 1, 17*4);
 	sr = 0x2700;
-	SM_UL(ADDR(0),LM_UL(MEM(TOSSTART)));
-	SM_UL(ADDR(4),LM_UL(MEM(TOSSTART+4)));
+	SM_UL(ADDR(0),LM_UL(MEM(tosstart)));
+	SM_UL(ADDR(4),LM_UL(MEM(tosstart+4)));
 	SP = LM_UL(ADDR(0));
 	pc = LM_UL(ADDR(4));
 #if 0
 	fprintf(stderr,"Longwords at 0, 4 initialized to %0lx,%0lx\n",
 		(long)SP,(long)pc);
 #endif
-	if ((TOSSTART>>16) != LM_UW(ADDR(4)))
-	{
-	    fprintf(stderr,"This STonX binary has been compiled for use with a %dKB TOS image!\n(Versions %s)\n",TOS_1 ? 192 : 256,TOS_1 ? "1.00, 1.02, 1.04" : "1.62, 1.7, 2.0X");
-	    exit(1);
-	}
 }
 #endif

@@ -57,20 +57,13 @@ extern L nz_save;
 #endif
 
 /* BUGS... */
-#define ROMSTART 	0xfa0000
+/*#define ROMSTART 	0xfa0000*/
 #define CARTSTART 	0xfa0000
 #define CARTEND 	0xfc0000
 #define STONXCOOKIEMAGIC "STon"
 #define STONXCOOKIEJAR  0xfbfc00
 #define STONXCOOKIEJAR_SIZE (CARTEND - STONXCOOKIEJAR)
 #define STONXCOOKIEADDR 0xfbf800
-#if TOS_1
-#define TOSSTART	0xfc0000
-#define TOSEND		0xff0000
-#else
-#define TOSSTART	0xe00000
-#define TOSEND 		0xe40000
-#endif
 
 #define	SIM_HARDWARE 1
 #define COMPACT 0

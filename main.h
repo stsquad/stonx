@@ -22,6 +22,12 @@ extern int timer_a;
 extern int midi;
 extern int realtime;
 
+extern int tos1;
+extern long tosstart, tosstart1, tosstart2, tosstart4;
+extern long tosend, tosend1, tosend2, tosend4;
+extern long romstart, romstart1, romstart2, romstart4;
+extern long romend, romend1, romend2, romend4;
+
 extern int stonx_exit(void); /* does some killing but no exit() */
 extern int stonx_shutdown(int mode); /* React on atari shutdown 
 				      * (0 = halt, 1 = warmboot, 2 = coldboot)

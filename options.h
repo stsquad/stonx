@@ -8,15 +8,12 @@
 
 #include "config.h"
 
-/* Some systems can't handle large BSS segments (e.g. Linux), so this may be set
+/* Some systems can't handle large BSS segments, so this may be set
  * in config.h
  */
 #ifndef SMALL
 #define SMALL 1
 #endif
-
-/* Set this to 1 if you're going to use a TOS 1.X */
-#define TOS_1 0
 
 /* Draw everything to a pixmap as well in the Xlib-VDI driver so we can 
  * redraw at exposure events?
@@ -109,7 +106,7 @@
 /* Set this to 1, if you want joystick support */
 #define JOYSTICK 1
 #else
-#error MIST!
+#error NoJoystick
 #define JOYSTICK 0
 #endif
 

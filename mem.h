@@ -8,6 +8,7 @@
 #ifndef MEM_H
 #define MEM_H
 #include "defs.h"
+#include "main.h"  /* for tosstart and tosend */
 
 extern void init_mem(void);
 extern void mc68000_reset(void);
@@ -32,62 +33,43 @@ extern B mem[];
  */
 
 #if PROTECT_ROM
+
 #if SMALL
+
 #define NORMAL_ADDRESS_W_B(_x) (((_x) >= 0x800) && ((_x) <= SMALL_MEM-1))
 #define NORMAL_ADDRESS_W_W(_x) (((_x) >= 0x800) && ((_x) <= SMALL_MEM-2))
 #define NORMAL_ADDRESS_W_L(_x) (((_x) >= 0x800) && ((_x) <= SMALL_MEM-4))
-#if TOS_1
 #define NORMAL_ADDRESS_R_B(_x)  ((((_x) >= 0x800) && ((_x) <= SMALL_MEM-1))\
-			||(((_x) >= TRIM(CARTSTART)) && ((_x) <= TRIM(TOSEND-1))))
+			||(((_x) >= romstart) && ((_x) <= tosend1)))
 #define NORMAL_ADDRESS_R_W(_x)  ((((_x) >= 0x800) && ((_x) <= SMALL_MEM-2))\
-			||(((_x) >= TRIM(CARTSTART)) && ((_x) <= TRIM(TOSEND-2))))
+			||(((_x) >= romstart) && ((_x) <= tosend2)))
 #define NORMAL_ADDRESS_R_L(_x)  ((((_x) >= 0x800) && ((_x) <= SMALL_MEM-4))\
-			||(((_x) >= TRIM(CARTSTART)) && ((_x) <= TRIM(TOSEND-4))))
-#else /* !TOS_1 */
-#define NORMAL_ADDRESS_R_B(_x)  ((((_x) >= 0x800) && ((_x) <= SMALL_MEM-1))\
-			||(((_x) >= TRIM(TOSSTART)) && ((_x) <= TRIM(TOSEND-1))))
-#define NORMAL_ADDRESS_R_W(_x)  ((((_x) >= 0x800) && ((_x) <= SMALL_MEM-2))\
-			||(((_x) >= TRIM(TOSSTART)) && ((_x) <= TRIM(TOSEND-2))))
-#define NORMAL_ADDRESS_R_L(_x)  ((((_x) >= 0x800) && ((_x) <= SMALL_MEM-4))\
-			||(((_x) >= TRIM(TOSSTART)) && ((_x) <= TRIM(TOSEND-4))))
-#endif
-#else /* !SMALL */
-#if TOS_1
-#define NORMAL_ADDRESS_W_B(_x) (((_x) >= 0x800) && ((_x) <= TRIM(CARTSTART-1)))
-#define NORMAL_ADDRESS_W_W(_x) (((_x) >= 0x800) && ((_x) <= TRIM(CARTSTART-2)))
-#define NORMAL_ADDRESS_W_L(_x) (((_x) >= 0x800) && ((_x) <= TRIM(CARTSTART-4)))
-#define NORMAL_ADDRESS_R_B(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-1)))
-#define NORMAL_ADDRESS_R_W(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-2)))
-#define NORMAL_ADDRESS_R_L(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-4)))
-#else /* !TOS_1 */
-#define NORMAL_ADDRESS_W_B(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSSTART-1)))
-#define NORMAL_ADDRESS_W_W(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSSTART-2)))
-#define NORMAL_ADDRESS_W_L(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSSTART-4)))
-#define NORMAL_ADDRESS_R_B(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-1)))
-#define NORMAL_ADDRESS_R_W(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-2)))
-#define NORMAL_ADDRESS_R_L(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-4)))
-#endif /* TOS_1 */
-#endif /* SMALL */
-#else /* !PROTECT_ROM */
-#if TOS_1
-#define NORMAL_ADDRESS_R_B(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-1)))
-#define NORMAL_ADDRESS_R_W(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-2)))
-#define NORMAL_ADDRESS_R_L(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-4)))
-#define NORMAL_ADDRESS_W_B(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-1)))
-#define NORMAL_ADDRESS_W_W(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-2)))
-#define NORMAL_ADDRESS_W_L(_x) (((_x) >= 0x800) && ((_x) <= TRIM(TOSEND-4)))
-#else /* !TOS_1 */
-#define NORMAL_ADDRESS_R_B(_x) (((_x) >= 0x800) && ((_x) <= TRIM(CARTEND-1)))
-#define NORMAL_ADDRESS_R_W(_x) (((_x) >= 0x800) && ((_x) <= TRIM(CARTEND-2)))
-#define NORMAL_ADDRESS_R_L(_x) (((_x) >= 0x800) && ((_x) <= TRIM(CARTEND-4)))
-#define NORMAL_ADDRESS_W_B(_x) (((_x) >= 0x800) && ((_x) <= TRIM(CARTEND-1)))
-#define NORMAL_ADDRESS_W_W(_x) (((_x) >= 0x800) && ((_x) <= TRIM(CARTEND-2)))
-#define NORMAL_ADDRESS_W_L(_x) (((_x) >= 0x800) && ((_x) <= TRIM(CARTEND-4)))
-#endif /* TOS_1 */
-#endif
+			||(((_x) >= romstart) && ((_x) <= tosend4)))
 
-#define PC_IN_ROM(pc) (TRIM(pc) >= TOSSTART\
-				&& TRIM(pc) < TOSEND)
+#else /* !SMALL */
+
+#define NORMAL_ADDRESS_W_B(_x) (((_x) >= 0x800) && ((_x) <= romstart1 ))
+#define NORMAL_ADDRESS_W_W(_x) (((_x) >= 0x800) && ((_x) <= romstart2 ))
+#define NORMAL_ADDRESS_W_L(_x) (((_x) >= 0x800) && ((_x) <= romstart4 ))
+#define NORMAL_ADDRESS_R_B(_x) (((_x) >= 0x800) && ((_x) <= tosend1))
+#define NORMAL_ADDRESS_R_W(_x) (((_x) >= 0x800) && ((_x) <= tosend2))
+#define NORMAL_ADDRESS_R_L(_x) (((_x) >= 0x800) && ((_x) <= tosend4))
+
+#endif /* SMALL */
+
+#else /* !PROTECT_ROM */
+
+#define NORMAL_ADDRESS_R_B(_x) (((_x) >= 0x800) && ((_x) <= romend1 ))
+#define NORMAL_ADDRESS_R_W(_x) (((_x) >= 0x800) && ((_x) <= romend2 ))
+#define NORMAL_ADDRESS_R_L(_x) (((_x) >= 0x800) && ((_x) <= romend4 ))
+#define NORMAL_ADDRESS_W_B(_x) (((_x) >= 0x800) && ((_x) <= romend1 ))
+#define NORMAL_ADDRESS_W_W(_x) (((_x) >= 0x800) && ((_x) <= romend2 ))
+#define NORMAL_ADDRESS_W_L(_x) (((_x) >= 0x800) && ((_x) <= romend4 ))
+
+#endif /* PROTECT_ROM */
+
+
+#define PC_IN_ROM(pc) (TRIM(pc) >= tosstart  &&  TRIM(pc) < tosend)
 
 #define ADDR(_x)	((void *)&(mem[_x]))
 #define VADDR(_x) 	((UL)_x-(UL)ADDR(0))
@@ -95,6 +77,7 @@ extern B mem[];
 #define MEM_MASK	(MEMSIZE-1)
 #define TRIM(_x)	((_x)&MEM_MASK)
 #define MEM(_x) (ADDR(((UL)(_x))&MEM_MASK))
+
 
 /* -------------------------------------------------------------------------- */
 /* Routines for loading/storing 8/16/32 bit ints, with no regard to byte ord. */
