@@ -5,24 +5,10 @@
 # subsituting things surrounded by @ symbols with stuff the configure
 # script works out.
 #
-# This Makefile.in is very ugly and could be improved. Two options exist
+# This Makefile.in is very ugly and could be improved.
+# We should probably make a complete automake, autoconf configuration.
 #
-# Option 1 
-# "We should throw away the autoconf things and make it using
-# CONFIGVARS, RULES, BINFILES, SCRFILES, EXTRAFILES, MISCFILES
-# like we've done at subdirectory mint and m68k-stuff.
-# In that case we not longer need a Makefile.in or configure.
-# It would be nice to have also a 'make config' or
-# 'make menueconfig' or even 'make xconfig'."
-#
-# Option 2
-# "We also could make a complete automake, autoconf configuration.
-# This would be a lot of work and there are lots of people thinking
-# that would be a mess."
-#
-# In recent times option 2 has been followed. Not due to any grand
-# insight on how to fix it up, just that autoconf was there and some
-# bits needed tweaking. The Makefile still awaits a true makefile guru
+# The Makefile still awaits a true makefile guru
 # to sprinkle some pixie dust on it. - AJB
 #
 
@@ -36,7 +22,7 @@ STONXDIR=@datadir@/stonx
 
 SHELL=/bin/sh
 MAKEDEPEND=@MAKEDEPEND@
-SUBDIRS = m68k-stuff mint
+SUBDIRS = cartridge  # mint
 
 # Register variables (-ffixed-reg)
 REGS= @regs@
@@ -78,26 +64,26 @@ SCC=@SCC@ $(REGS)
 CPP=@CPP@
 
 CFLAGS= $(INC) $(AINC) $(DEF) $(ADEF) $(OPT) $(SFLAGS)
+
+MINTOBJS= mint/mint_comm.o mint/mint_stonxfs_fs.o mint/mint_stonxfs_dev.o\
+	 mint/mint_interface.o mint/mint_serial.o mint/mint_misc.o \
+
+
 OBJ=cpu.o $(MON_OBJS) io.o main.o native.o utils.o ikbd.o debug.o\
 	blitter.o mem.o audio.o midi.o\
 	gemdos.o ui.o screen.o fdc.o bios.o\
 	syscalls.o memarray.o sfp.o toserror.o\
-	cookie.o
-
+	cookie.o $(MINTOBJS)
 
 XOBJ=x.o xlib_vdi.o
 
 MOREOBJ= code0000.o code0300.o code0600.o code0900.o code1200.o code1500.o
 
-SUBOBJS= m68k_stuff_dump.o \
-	 mint_comm.o mint_stonxfs_fs.o mint_stonxfs_dev.o\
-	 mint_interface.o mint_serial.o mint_misc.o \
-
 CSRC=$(OBJ:.o=.c) $(SVGAOBJ:.o=.c) $(XOBJ:.o=.c) gen.c
 DIST=$(CSRC) am.h mem.h debug.h defs.h main.h xlib_vdi.h tosdefs.h\
 	ikbd.h screen.h Keysyms Makefile.in \
 	docs/AUTHORS docs/DEBUGGING docs/INSTALL docs/PROGRAMS \
-	docs/README docs/RELEASE_NOTES docs/TOS-VERSIONS \
+	docs/README docs/RELEASE_NOTES docs/TOS-VERSIONS ChangeLog \
 	configure fill.xbm iotab1.c iotab2.c config/*.[hc] config.guess \
 	tosfonts.c fonthdr.h fnttobdf.c data/makefonts.sh \
 	blitter.c audio.c mem.c memarray.c bios.c \
@@ -106,12 +92,10 @@ DIST=$(CSRC) am.h mem.h debug.h defs.h main.h xlib_vdi.h tosdefs.h\
 	amdefs.h genhead.c ui.c m4_to_c.sh cpu.h stonx.Keysyms \
 	atari/FLOPPY-4MB atari/bench1.pas atari/bench1.prg atari/final.tos \
 	cartridge/cartridge.img cartridge/cartridge.s cartridge/cartridge.h \
+        cartridge/Makefile cartridge/cartridge.txt \
 	syscalls.h utils.h iofuncs.h blitter.h native.h audio.h io.h ui.h \
 	fdc.c fdc.h cookie.h svgalib_vdi.h x.h \
 	svga.h midi.c midi.h sfp.h toserror.h \
-	DEPENDENCIES RULES CONFIGVARS PHONY ChangeLog \
-	mint/BINFILES mint/SRCFILES mint/EXTRAFILES mint/MISCFILES \
-	mint/Makefile \
 	mint/mint_comm.c mint/mint_stonxfs_fs.c mint/mint_stonxfs_dev.c\
 	mint/mint_interface.c mint/mint_serial.c mint/mint_misc.c \
 	mint/mint_defs.h mint/mint_comm.h mint/mint_serial.h \
@@ -123,11 +107,7 @@ DIST=$(CSRC) am.h mem.h debug.h defs.h main.h xlib_vdi.h tosdefs.h\
 	mint/atari/com_dev.h mint/atari/serial_dev.c mint/atari/serial_dev.h \
 	mint/atari/stonx_dev.c mint/atari/stonx_dev.h mint/atari/main.c \
 	mint/atari/stonxfsv.h mint/atari/stonx.xfs mint/atari/global.h \
-	mint/atari/stonx_xfs.c mint/atari/stonx_xfs.h \
-	m68k-stuff/BINFILES m68k-stuff/SRCFILES m68k-stuff/EXTRAFILES \
-	m68k-stuff/MISCFILES m68k-stuff/Makefile \
-	m68k-stuff/m68k-stuff.pl m68k-stuff/m68k-stuff.s \
-	m68k-stuff/m68k_stuff_dump.h m68k-stuff/m68k_stuff_dump.c
+	mint/atari/stonx_xfs.c mint/atari/stonx_xfs.h
 
 DEPSRC=$(CSRC) $(MOREOBJ:.o=.c)
 
@@ -192,12 +172,10 @@ code.c code0000.c code0300.c code0600.c code0900.c code1200.c code1500.c:	code.m
 cpu.o:	code.c
 
 stonx:	$(OBJ) $(XOBJ) $(MOREOBJ)
-	$(SCC) @static@ -o $@ $(OBJ) $(XOBJ) $(MOREOBJ) $(SUBOBJS) \
-               $(LIBS) $(XLIBS)
+	$(SCC) @static@ -o $@ $(OBJ) $(XOBJ) $(MOREOBJ) $(LIBS) $(XLIBS)
 
 stonvga: $(OBJ) $(SVGAOBJ) $(MOREOBJ)
-	$(SCC) @static@ -o $@ $(OBJ) $(SVGAOBJ) $(MOREOBJ) $(SUBOBJS) \
-	       $(SVGALIBS)
+	$(SCC) @static@ -o $@ $(OBJ) $(SVGAOBJ) $(MOREOBJ) $(SVGALIBS)
 
 fnttobdf:	fnttobdf.c
 	$(CC) -o $@ fnttobdf.c $(XLIBS) @X_PRE_LIBS@ -lXext -lX11 @X_EXTRA_LIBS@
@@ -206,7 +184,7 @@ tosfonts:	tosfonts.c
 	$(CC) -o $@ tosfonts.c $(XLIBS) @X_PRE_LIBS@ -lXext -lX11 @X_EXTRA_LIBS@
 
 clean:
-	rm -f $(OBJ) $(MOREOBJ) $(SUBOBJ) $(XOBJ) $(SVGAOBJ) \
+	rm -f $(OBJ) $(MOREOBJ) $(XOBJ) $(SVGAOBJ) \
 	rm -f mon.out gmon.out fonts-done.stmp
 	rm -f tosfonts fnttobdf data/System?.fnt tosfonts.o fnttobdf.o\
               execute.o
@@ -234,7 +212,7 @@ bindist:
 install:
 	install -c -s stonx $(INSTBIN)/stonx
 	mkdir -p $(STONXDIR)/gemdos_c
-	cp cartridge/cartridge.img $(STONXDIR)
+	install -c -m 0644 cartridge/cartridge.img $(STONXDIR)/cartridge.img
 	@if test -f /etc/stonxrc; then \
 	echo "/etc/stonxrc already exists, creating /etc/stonxrc.new" >&2; \
 	echo "cartridge $(STONXDIR)/cartridge.img" > $(sysconfdir)/stonxrc.new ; \
