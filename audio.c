@@ -1153,7 +1153,7 @@ static void SPARC_audio_open(void)
 	{	if (errno == EBUSY) 
 			fprintf(stderr,"SPARC Audio: Audio device is busy\n");
 		else 
-			fprintf(stderr,"SPARC Audio: Error %lx opening audio device. - ",errno);
+			fprintf(stderr,"SPARC Audio: Error %x opening audio device. - ",errno);
 		exit(1);				
 	}
 #ifndef __FreeBSD__
@@ -1225,7 +1225,8 @@ static void SPARC_audio_volume(long volume)
 	ioctl(devAudio, AUDIO_SETINFO, &a_info);
 }
 
-static void SPARC_audio_closest_freq(long ifreq)
+/*
+static long SPARC_audio_closest_freq(long ifreq)
 {
 	if (audio_samplebits==16)
 	{	static int valid[] = { 8000, 9600, 11025, 16000, 18900, 22050, 32000, 37800, 44100, 48000, 0};
@@ -1241,6 +1242,7 @@ static void SPARC_audio_closest_freq(long ifreq)
 	} else
 		return(8000);
 }
+*/
 
 #endif
 
