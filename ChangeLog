@@ -1,6 +1,6 @@
 2004-08-15  Thomas Huth,  STonX-0.6.7.6
 
-	* di_dis.c, di_dis.h, x.c, xlib_vdi.c, mint/mint_stonxfs_fs.c:
+	* audio.c, di_dis.c, di_dis.h, x.c, xlib_vdi.c, mint/mint_stonxfs_fs.c:
 	  Did some source code beautifications.
 
 2003-12-12 14:15  Thomas Huth
@@ -159,17 +159,17 @@
 
 2001-02-27 Thomas Huth
 
-        * Removed the TOS_1 define and added code, so that STonX can now
-          use TOS 1 and TOS 2 Roms without being recompiled (changed the
-          files main.c, main.h, cpu.c, mem.h, defs.h and options.h)
-        * Updated load_file() in utils.c
-        * Set white_pixel and black_pixel variables in xlib_vdi.c so that
-          vsc_form() (-> the mouse pointer form) now works.
+	* Removed the TOS_1 define and added code, so that STonX can now
+	  use TOS 1 and TOS 2 Roms without being recompiled (changed the
+	  files main.c, main.h, cpu.c, mem.h, defs.h and options.h)
+	* Updated load_file() in utils.c
+	* Set white_pixel and black_pixel variables in xlib_vdi.c so that
+	  vsc_form() (-> the mouse pointer form) now works.
 
 2001-02-20  Markus Kohm, STonX-0.6.7.3
 
-        * Bugfixes in x.c
-	
+	* Bugfixes in x.c
+
 2001-02-13  Till Harbaum, STonX-0.6.7.2
 
 	* Added joystick support.
@@ -184,7 +184,7 @@
 	* Keysym parsing now accepts decimal and hex constants,
 	  new german Keymap.G file.
 
- 	* Default vbl frequency increased to 50Hz for fluid mouse
+	* Default vbl frequency increased to 50Hz for fluid mouse
 	  movement and correct speed of final.tos.
 	
 2001-02-05  Markus Kohm, STonX-0.6.7.1

@@ -2,14 +2,14 @@ dnl This is the the source file used to produce the configure script
 AC_INIT(defs.h)
 AC_CONFIG_HEADER(config.h)
 
-version="0.6.7.5"
+version="0.6.7.6"
 AC_SUBST(version)
 echo "Configuring STonX version $version..."
 echo "#define VERSION \"$version\"">version.h
 echo "#define STONX_VERSION_MAJOR 0">>version.h
 echo "#define STONX_VERSION_MINOR 6">>version.h
 echo "#define STONX_PATCH_MAJOR 7">>version.h
-echo "#define STONX_PATCH_MINOR 5">>version.h
+echo "#define STONX_PATCH_MINOR 6">>version.h
 
 #### PROGRAMS
 

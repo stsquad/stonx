@@ -221,9 +221,14 @@ install:
 	echo "fs C:$(STONXDIR)/gemdos_c" >> $(SYSCONFDIR)/stonxrc ; \
 	echo "vbl 2 refresh 2 chunky" >> $(SYSCONFDIR)/stonxrc ; \
 	echo "boot c" >> $(SYSCONFDIR)/stonxrc ; \
-	fi ; \
-	echo "To complete installation you should copy a tos.img to:" ; \
-	echo "  " $(STONXDIR) ;
+	fi
+	@if test -f data/tos.img ; then \
+	  echo "install -c -m 0644  data/tos.img" $(STONXDIR)/tos.img ; \
+	  install -c -m 0644  data/tos.img $(STONXDIR)/tos.img ; \
+	else \
+	  echo "To complete installation you should copy a tos.img to:" ; \
+	  echo "  " $(STONXDIR) ; \
+	fi
 
 depend: $(DEPSRC) 
 	cp Makefile Makefile.bak

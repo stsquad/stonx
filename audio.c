@@ -817,7 +817,7 @@ int audio_server(void) {
   
   Audio.machine_audio_open(); 
   
-  while (1) {	
+  while (1) {
     FD_SET(parent_pipe[0],&rd_fds);
     timeout.tv_sec = 0;
     timeout.tv_usec = to;
@@ -827,12 +827,13 @@ int audio_server(void) {
     gettimeofday(&now, NULL);
     
     /* some error occured */
-    if (ret <= 0) {	
-      if (kill(parent_pid,0) < 0) {	
+    if (ret <= 0) {
+      if (kill(parent_pid,0) < 0) {
 	Audio.machine_audio_close();
-	if (verbose)
-	  fprintf(stderr,"STonX audio server exited(parent process died).\n");
-	exit(0);	
+#if DEBUG_SND
+	fprintf(stderr,"STonX audio server exited (parent process died).\n");
+#endif
+	exit(0);
       }	
     }
     

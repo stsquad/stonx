@@ -1158,14 +1158,14 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers config.h"
 
 
-version="0.6.7.5"
+version="0.6.7.6"
 
 echo "Configuring STonX version $version..."
 echo "#define VERSION \"$version\"">version.h
 echo "#define STONX_VERSION_MAJOR 0">>version.h
 echo "#define STONX_VERSION_MINOR 6">>version.h
 echo "#define STONX_PATCH_MAJOR 7">>version.h
-echo "#define STONX_PATCH_MINOR 5">>version.h
+echo "#define STONX_PATCH_MINOR 6">>version.h
 
 #### PROGRAMS
 

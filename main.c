@@ -543,7 +543,7 @@ int main (int argc, char *argv[])
     printf ("--------------------------------------------------------------------------------\n"
 	    "STonX Version " VERSION "\n"
 	    "(c)1994-1997 by Marinos Yannikos and Martin D. Griffiths\n"
-	    "(c)2001-2003 by the STonX development team - http://stonx.sourceforge.net/\n"
+	    "(c)2001-2004 by the STonX development team - http://stonx.sourceforge.net/\n"
 	    "(please read the documentation files for more information).\n"
 	    "This program is free software, and comes with NO WARRANTY!\n"
 	    "Read the file COPYING for details. If this copy of STonX was not accompanied\n"

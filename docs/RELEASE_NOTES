@@ -1,3 +1,11 @@
+Release notes for version 0.6.7.6
+=================================
+
+This version only fixes some compiling problems on certain architectures.
+There aren't any new features in this version apart from a spanish keysyms
+file (thanks to Gabriel Huertas).
+
+
 Release notes for version 0.6.7.5
 =================================
 
@@ -25,10 +33,12 @@ Basically its long overdue :-)
 
 Alex
 
+
 Release notes for version 0.6.7.3
 =================================
 
 This version fixes some glitches in the x driver.
+
 
 Release notes for version 0.6.7.2
 =================================
@@ -42,6 +52,7 @@ of the linux kernel even supports atari joysticks connected to the
 parallel port.
 
 Another new feature is the fullscreen option for the x video driver.
+
 
 Release notes for version 0.6.7.1
 =================================
