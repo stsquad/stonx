@@ -16,15 +16,15 @@
 
 
 # Assembler with options for Motorola like syntax (68000 cpu)
-AS = /usr/bin/m68k-atari-mint-as
+AS = m68k-atari-mint-as
 ASFLAGS = --register-prefix-optional -m68000
 
 # Linker with relocation information and binary output (image)
-LD = /usr/bin/m68k-atari-mint-ld
+LD = m68k-atari-mint-ld
 LDFLAGS =-Ttext=0xfa0000 -oformat binary
 
 # The objdump utility (disassembler)
-OBJDUMP=/usr/bin/m68k-atari-mint-objdump
+OBJDUMP = m68k-atari-mint-objdump
 
 cartridge.img: cartridge.o 
 	${LD} ${LDFLAGS} -o $@ cartridge.o
@@ -38,4 +38,4 @@ cartridge.o: cartridge.s
 	$(AS) $(ASFLAGS) $? -o $@
         
 clean:
-	rm -f *.o *~ cartridge.img 
+	rm -f *.o *~ cartridge.img core

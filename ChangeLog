@@ -1,3 +1,7 @@
+2001-10-10 Thomas Huth
+        * Updated the new cartridge.img - it should now work with both,
+          EmuTOS and normal TOS versions!
+
 2001-07-24 Alex Bennee
 	* Fixed uninitialised pointer is FS array causing crash when setting up multiple
 	floppy disk drives.
