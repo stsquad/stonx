@@ -1,4 +1,6 @@
-
+2001-06-21 Alex Bennee
+	* Fixed the MONITOR functionality (but reduced functionality)
+	
 2001-04-01 Thomas Huth
 	* Fixed some possible buffer overflows in main.c
 	* Patched vro_cpyfm in xlib_vdi.c to also work with high and
