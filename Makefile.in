@@ -141,7 +141,7 @@ all:	rekursive configure Makefile stonx @svga_target@ cartridge.img \
 
 rekursive: $(SUBDIRS)
 	@for subdir in $(SUBDIRS) ; do \
-	  (cd $$subdir; $(MAKE) -r all); \
+	  (cd $$subdir; $(MAKE) -r all DEFS="$(DEF)"); \
 	done
 
 Makefile:	Makefile.in

@@ -37,7 +37,17 @@
 #endif
 
 #include <sys/stat.h>
+#if defined(STATFS_USE_STATVFS)
+#include <sys/statvfs.h>
+#elif defined(STATFS_USE_VFS)
 #include <sys/vfs.h>
+#elif defined(STATFS_USE_MOUNT)
+#include <sys/param.h>
+#include <sys/mount.h>
+#elif defined(STATFS_USE_STATFS_VMOUNT)
+#include <sys/statfs.h>
+#include <sys/vmount.h>
+#endif
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
@@ -912,9 +922,16 @@ UL mint_fs_pathconf( MINT_FCOOKIE *dir, W which )
 	  break;
       case TOS_DP_NAMEMAX:
 	  dirname = mint_makefilename( dir->index, NULL, NULL );
+#ifndef __NetBSD__
+/* XXX workaround
+ * add a f_namelen check to configure to be clean
+ */
 	  if ( (retval = pathconf( dirname, _PC_NAME_MAX )) < 0 &&
 	       !statfs( dirname, &sfs ) && sfs.f_namelen > 0 )
 	      retval = sfs.f_namelen;
+#else
+	      retval = 256;
+#endif
 	  break;
       case TOS_DP_ATOMIC:
 	  if ( statfs( mint_makefilename( dir->index, NULL, NULL ), &sfs ) ||
