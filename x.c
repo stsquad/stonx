@@ -148,7 +148,7 @@ extern void x_process_signal(int signal);
 extern void x_process_events(void);
 
 #if MONITOR
-extern void signal_monitor (int);
+#include "monitor.h"
 #endif
 
 static void show_screen(void);
@@ -746,7 +746,7 @@ void x_process_events(void)
 #if SHIFT_PAUSE_EXITS
 		      fprintf(stderr,"Shift-Pause detected\n");
 		      #if MONITOR
-		      signal_monitor(NULL);
+		      signal_monitor(BREAK,NULL);
 		      #else
 		      stonx_exit();
 		      exit(0);

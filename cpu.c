@@ -36,9 +36,7 @@
 #define NOTREACHED assert(0);
 
 #if MONITOR
-extern int in_monitor;
-extern void signal_monitor(int);
-extern int update_monitor(UL,int,int);
+#include "monitor.h"
 #endif
 #define CHECK_TRACE() do{if (sr&SR_T) {flags &= ~F_TRACE1; flags |= F_TRACE0;}}while(0)
 #define CHECK_NOTRACE() do{if ((sr&SR_T)==0) flags &= ~(F_TRACE0|F_TRACE1);}while (0)
@@ -372,11 +370,11 @@ static INLINE void V_EX (UL addr, int rw)
 	sr &= 0xf8ff;
 	sr |= 0x0700;	/* BUG */
 #endif
-	/* Chance to update monitor 
-	** TODO: flag it so we don't do it at every exception!
-	*/
 #if MONITOR
-	signal_monitor(1);
+	/*
+	** Signal the monitor that an exception has occured
+	*/
+	signal_monitor(GENERAL_EXCEPTION,NULL);
 #endif
 
 }
@@ -414,6 +412,7 @@ static void exception (int n, UL nw)
 	fprintf(stderr,
 		"Exception %d at pc=%08lx,sp=%08lx (iw=%04x) -> %08lx\n",
 		n, (long)pc, (long)SP, LM_UW(MEM(pc)), (long)nw);
+
     }
 #endif
     if (n < T_TRAP_0 || n > T_TRAP_15)
@@ -804,10 +803,6 @@ fprintf(stderr,"Timer A interrupt\n");
 	{
 		EXCEPTION(T_TRACE);
 	}
-#if MONITOR
-	if (!in_monitor)
-	{
-#endif
 #if DOUBLE_HZ200
 	if ((flags & (F_200Hz|F_200HzB)) && (IPL_OK(6) /* && mfp_prio < 5 */
 #else
@@ -832,14 +827,14 @@ fprintf(stderr,"Timer A interrupt\n");
 	}
 	else if ((flags & F_VBL) && IPL_OK(4))
 	{
+	  #if MONITOR
+	  signal_monitor(VBL,NULL);
+	  #endif
 		machine.screen_shifter();
 		EXCEPTION(T_VBL);
 		SET_IPL(5);
 		flags &= ~F_VBL;
 	}
-#if MONITOR
-	}
-#endif
 }
 
 UB testcond[] = {

@@ -8,26 +8,50 @@
  * The original (broken) code can be found in release prior to 6.7.3
  */
 
-#include "defs.h"
-#include "tosdefs.h"
-#include "mem.h"
+/* Standard Includes */
 #include <stdio.h>
 #include <ctype.h>
 
+#include "defs.h"
+#include "tosdefs.h"
+#include "mem.h"
+
+#include "monitor.h"
+
 #define WATCH 1
-B *smem = 0;
-W *spc	= 0;
-static UL off = 0x10000;
-static UL bkpt = 0;
-static int mode=0;
 
 /* local vars */
 
 static UL count = 0;
 int in_monitor=0;
+static UL off = 0x10000;
+static UL bkpt = 0;
+static int mode=0;
+static monitor_signal_type signal_break=BREAK;
+
+
+/* For parsing cmd lines */
+#define EQ(_x,_y) (strcasecmp(_x,_y)==0)
+
+#define NUMCMDS 12
+
+typedef struct command_tag
+{
+   int             args;
+   char           *cmdlist[NUMCMDS];
+} command;
 
 /* external vars */
 extern int instruction_count;
+
+/* local functions */
+/* interactive */
+static void print_help (void);
+static void set_breakpoint (command *cmd);
+static void dump_memory (command *cmd);
+/* other */
+static int dissassemble (int pos, int count);
+static void dump_registers (UL *regs, int sr);
 
 /* disassembly routine */
 extern void* dis (char *ptr,char *string);
@@ -35,7 +59,6 @@ extern void* dis (char *ptr,char *string);
 
 void init_monitor (int startflag)
 {
-
   if (startflag)
     {
       fprintf (stderr,"Monitor being initialised (break@start).....\n");
@@ -56,10 +79,15 @@ void init_monitor (int startflag)
 **
 */
 
-void signal_monitor (int reason)
+void signal_monitor (monitor_signal_type reason,void *data)
 {
-  fprintf (stderr,"Signal to monitor %d\n",reason);
-  in_monitor=1;
+  fprintf (stderr,"Signal to monitor %x\n",reason);
+
+  if (reason&signal_break)
+    {
+      /* May put more advanced processing here?*/
+      in_monitor=1;
+    }
 }
 
 void kill_monitor (void)
@@ -88,6 +116,8 @@ int update_monitor (UL *regs, int sr, int pcoff)
   int monitor=0;
   int exit_val=0;
   char cmd[100]; 
+  command *cmdline;
+
 	int i, j, x, c, cha=0, toppc, pos, lo1, eoi, yp, ddd=0;
 	static UW v=0x4e71;
 #if WATCH
@@ -96,16 +126,17 @@ int update_monitor (UL *regs, int sr, int pcoff)
 	static UL lv=0;
 	UL u,s;
 
-	/* Question? Would an OR test be optimised faster? */
+	/* Question? Would an OR test be optimised faster?
+       ** need stateful logic here? what does in_monitor mean?*/
 	if (in_monitor)
 	  {
-	    if (count-- > 0 && TRIM(pcoff) != TRIM(bkpt)
-               #if WATCH
-	       && LM_UB(watch) == wv
-               #endif
-	    ) 
-	      return (exit_val);
+	    if (count-- > 0) return (exit_val);
 	 }
+	else if (watch || bkpt)
+	  {
+	    if (TRIM(pcoff) != TRIM(bkpt) &&
+		LM_UW(watch) != wv ) return (exit_val);
+	  }    
 	else
 	  {
 	    return (exit_val);
@@ -132,15 +163,23 @@ int update_monitor (UL *regs, int sr, int pcoff)
 	    fprintf(stdout,"\nSTMON>");
 
 	    toppc = TRIM(toppc); off = TRIM(off); 
-	    switch (c = getchar())
+
+	    fgets(cmd,sizeof(cmd),stdin);
+	    cmdline = parse_command (cmd);
+	    fprintf (stderr,"We have %d args\n",cmdline->args);
+
+	    switch (*(cmdline->cmdlist[0]))
 	      {
 	      case 'B':
 	      case 'b':
 		{
-		  fgets(cmd,sizeof(cmd),stdin);
-		  bkpt=strtol(cmd,NULL,16);
-		  fprintf ("Breakpoint set @ %lx\n",bkpt);
-		  monitor=0;
+		  set_breakpoint(cmdline);
+		  break;
+		}
+	      case 'D':
+	      case 'd':
+		{
+		  dump_memory(cmdline);
 		  break;
 		}
 	      case 'h':
@@ -160,9 +199,15 @@ int update_monitor (UL *regs, int sr, int pcoff)
 	      case 'R':
 	      case 'r':
 		{
-		  fgets(cmd,sizeof(cmd),stdin);
-		  count=strtol(cmd,NULL,10);
-		  monitor=0;
+		  if (cmdline->args>1) 
+		    {
+		      count=strtol(cmdline->cmdlist[1],NULL,10);
+		      monitor=0;
+		    }
+		  else
+		    {
+		      fprintf (stderr,"Need number of instructions to run!\n");
+		    }
 		  break;
 		}
 	      case 'S':
@@ -187,6 +232,39 @@ int update_monitor (UL *regs, int sr, int pcoff)
 	  } /* End While */
 	return (exit_val);
 }
+
+/*
+** Taken from sf snippet library (written by jholder)
+** now returns pointer to alloc'ed memory instead of locally scoped variable.
+** Also uses the strtok function instead of poorly reinventing it.
+*/
+
+
+command  *parse_command(char *cmd)
+{
+  char *word = NULL;
+  char *sep = " ";
+  int  nargs = 0;
+  command *newcmd;
+
+  newcmd = malloc( sizeof( command ) );
+  if( !newcmd ) return NULL;
+  memset( newcmd, 0, sizeof( command ) );
+
+  for (word = strtok(cmd, sep);
+       word;
+       word = strtok(NULL, sep) )
+  {
+     newcmd->cmdlist[ nargs ] = word;
+     nargs++;
+     if( nargs > NUMCMDS-1 ) break;
+  }
+  newcmd->args = nargs;
+  return newcmd;
+}
+		
+
+
 
 /* 
 ** Dump Help for Debugger
@@ -268,6 +346,57 @@ static void dump_registers (UL *regs, int sr)
 }
 
 /*
+** Format STMON> d address [length]
+**
+** Check if d is a register alias (@d0-@a7,@sp)
+** Or check if its a normal hex address
+**
+** Default to twenty words.
+*/
+
+static void dump_memory (command *cmd)
+{
+
+}
+
+
+/*
+** Set Break point
+**
+** Format STMON> b <address | type>
+**
+** Scan for an address or type (exception/gemdos/interupt?)
+*/
+
+static void set_breakpoint (command *cmd)
+{
+
+  if (cmd->args<2)
+    {
+      fprintf (stderr,"Need at least an address or type\n");
+    }
+  else
+    {
+      if (EQ(cmd->cmdlist[1],"VBL"))
+	{
+	  fprintf (stderr, "Setting break on next VBL interrupt\n");
+	  signal_break = signal_break | VBL;
+	} 
+      else if (EQ(cmd->cmdlist[1],"EXCEPTION"))
+	{
+	  fprintf (stderr, "Setting break on next EXCEPTION\n");
+	  signal_break = signal_break | GENERAL_EXCEPTION;
+	}
+      else /* assume its an address and try to parse it */
+	{
+	  bkpt = strtol (cmd->cmdlist[1],NULL,16);
+	  fprintf (stderr, "Breakpoint set at %x\n", bkpt);
+	}
+      in_monitor=1;
+    }
+}
+
+/*
 ** The Original dissassembly used some table generated by the OPCODE routines
 ** This now uses a patched version of Jim Patchells dissassembler (patched to
 ** read memory using STonXs L_ macros) 
@@ -294,7 +423,7 @@ static int dissassemble (int pos, int count)
   for (i=0; i<count; i++)
     {
       old_pos=pos;
-      pos = dis (pos,string);
+      pos = dis ((char *) pos,string); /* UGLY Kludge */
       k = pos-old_pos;
       fprintf(stdout,"%-50s",string);
 

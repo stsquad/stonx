@@ -1,3 +1,7 @@
+
+2001-02-2 Alex Bennee
+	* Updated more monitor fixes. Breakpoints (address only now work)
+
 2001-06-29 Frank Naumann
 	* Don't include sys/statvfs.h, default to include sys/vfs.h.
 	
