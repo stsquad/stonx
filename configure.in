@@ -1,13 +1,13 @@
 dnl This is the the source file used to produce the configure script
 AC_INIT(defs.h)
-version="0.6.7.4pre1"
+version="0.6.7.4"
 AC_SUBST(version)
 echo "Configuring STonX version $version..."
 echo "#define VERSION \"$version\"">version.h
 echo "#define STONX_VERSION_MAJOR 0">>version.h
 echo "#define STONX_VERSION_MINOR 6">>version.h
 echo "#define STONX_PATCH_MAJOR 7">>version.h
-echo "#define STONX_PATCH_MINOR 3">>version.h
+echo "#define STONX_PATCH_MINOR 4">>version.h
 #### PROGRAMS
 AC_PROG_CC
 AC_ISC_POSIX
@@ -135,8 +135,7 @@ fi
 	;;
 i*86-*-linux)
 	echo 'Umm... OK, this should work.'
-	echo 'NOTE: To enable Linux SVGAlib support, uncomment the 2 lines after the'
-	echo 'one saying "#Linux SVGALIB support :" in the Makefile before compiling!'
+	echo 'NOTE: To enable Linux SVGAlib support call configure with --enable-svga'
 	regs="-ffixed-ebx -ffixed-ebp -fomit-frame-pointer -m486 -malign-jumps=2 -malign-functions=4"
 	copt="$copt -funroll-loops"
 	conf="config/x86-linux.h"
@@ -347,5 +346,6 @@ AC_SUBST(MAKEDEPEND)
 SCC="$CC"
 AC_SUBST(SCC)
 test -f Makefile.devel || touch Makefile.devel
-AC_OUTPUT(Makefile,
+AC_OUTPUT([Makefile
+stonx.spec],
 echo "=== don't worry about strange warning messages here! ==="; make depend)

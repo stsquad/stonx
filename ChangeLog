@@ -1,3 +1,6 @@
+2001-07-21 Alex Bennee, STonX-6.7.4
+	* Updated tweaks and fixes to configure/Makefile and new rpm building .spec
+
 2001-07-16 Alex Bennee
 	* Fixed re-init of native gemdos that was causing TOS1.0 to fail
 	

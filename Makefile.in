@@ -13,8 +13,11 @@
 
 .SUFFIXES: 	.m4 .img .S .prof .i .cs .tab
 
+# Paths and dirs (passed in bu configure script or modified with -e option (for rpms))
 prefix = @prefix@
 exec_prefix = @exec_prefix@
+sysconfdir = @sysconfdir@
+STONXDIR=@datadir@/stonx
 
 SHELL=/bin/sh
 MAKEDEPEND=@MAKEDEPEND@
@@ -48,7 +51,6 @@ SVGALIBS=-lvgagl -lvga
 SVGAOBJ=@svga_objs@
 SVGATARGET=@svga_target@
 
-STONXDIR=@datadir@/stonx
 DEF= @def@ -DINLINE=@inline@ -DSTONXDIR=\"$(STONXDIR)\"
 
 # Compiler
@@ -79,7 +81,7 @@ SUBOBJS= m68k_stuff_dump.o \
 CSRC=$(OBJ:.o=.c) $(SVGAOBJ:.o=.c) $(XOBJ:.o=.c) gen.c
 DIST=$(CSRC) am.h mem.h debug.h defs.h main.h xlib_vdi.h tosdefs.h\
 	ikbd.h screen.h Keysyms Makefile.in \
-	docs/AUTHORS docs/DEBUGGING docs/FONTS docs/INSTALL docs/PROGRAMS \
+	docs/AUTHORS docs/DEBUGGING docs/INSTALL docs/PROGRAMS \
 	docs/README docs/RELEASE_NOTES docs/TOS-VERSIONS \
 	configure fill.xbm iotab1.c iotab2.c config/*.[hc]\
 	config.guess cartridge.img \
@@ -100,7 +102,7 @@ DIST=$(CSRC) am.h mem.h debug.h defs.h main.h xlib_vdi.h tosdefs.h\
 	mint/mint_interface.c mint/mint_serial.c mint/mint_misc.c \
 	mint/mint_defs.h mint/mint_comm.h mint/mint_serial.h \
 	mint/mint_stonxfs_fs.h mint/mint_stonxfs_fs.h mint/mint_interface.h \
-	mint/mint_misc.h mint/mint_stonxfs_dev.h mint/stonxfsv.h \
+	mint/mint_misc.h mint/mint_stonxfs_dev.h \
 	mint/atari/BINFILES mint/atari/SRCFILES mint/atari/EXTRAFILES \
 	mint/atari/MISCFILES mint/atari/Makefile mint/atari/README \
 	mint/atari/bypass.s mint/atari/callstonx.s mint/atari/com_dev.c \
@@ -203,11 +205,14 @@ distclean: realclean
               Makefile.bak Makefile.devel\
               configure
 
+# this gets screwed up by not doing a --enable-svga first as the RPM build
+# assumes its doing both. This will get fixed later
 dist:	$(DIST)
 	rm -rf /tmp/$(DIR)
 	mkdir /tmp/$(DIR)
 	tar cf - $(DIST)|(cd /tmp/$(DIR); tar xpf -)
 	(cd /tmp; tar cf - $(DIR)|gzip -9 > $(DIR).tar.gz)
+	mv /tmp/$(DIR).tar.gz .
 
 bindist:
 	(cd /tmp/$(DIR); rm -rf *.o *.c *.h m4_to_c.sh *.m4 68000.def Makefile* config* cartridge.S data fnttobdf fill.xbm fonts-done.stmp gen kludge tosfonts)
@@ -223,10 +228,10 @@ install:
 	echo "vbl 2 refresh 2 chunky" >> /etc/stonxrc.new ; \
 	echo "boot c" >> /etc/stonxrc.new ; \
 	else \
-	echo cartridge $(PWD)/cartridge.img > /etc/stonxrc ; \
-	echo "fs C:$(STONXDIR)/gemdos_c" > /etc/stonxrc ; \
-	echo "vbl 2 refresh 2 chunky" >> /etc/stonxrc ; \
-	echo "boot c" >> /etc/stonxrc ; \
+	echo cartridge $(PWD)/cartridge.img > $(sysconfdir)/stonxrc ; \
+	echo "fs C:$(STONXDIR)/gemdos_c" > $(sysconfdir)/stonxrc ; \
+	echo "vbl 2 refresh 2 chunky" >> $(sysconfdir)/stonxrc ; \
+	echo "boot c" >> $(sysconfdir)/stonxrc ; \
 	fi ; \
 	echo "To complete installation you should copy tos.img to:" ; \
         echo "    " $(STONXDIR)/gemdos_c/ ; \
@@ -241,5 +246,21 @@ depend: $(DEPSRC)
 	sed 's/^\([A-Za-z0-9_]*\)\.o:/\1.o \1.ln:/g'>>Makefile.new
 	rm -f Makefile.tmp
 	mv Makefile.new Makefile
+
+# This assume you already have your RPM dirs set up 
+#rpm: $(RPMDIR)/SOURCES/STonX-$(VERSION).tar.gz ./stonx.spec
+#        rm -rf rpmtmp ||:
+#        mkdir rpmtmp
+#        mkdir rpmtmp/usr
+#        mkdir rpmtmp/etc
+#        mkdir rpmtmp/opt
+#        mkdir rpmtmp/usr/local
+#        rpm -ba --buildroot `pwd`/rpmtmp stonx.spec
+#        cp $(RPMDIR)/SRPMS/STonX-$(VERSION)-1.src.rpm .
+#        cp $(RPMDIR)/RPMS/*/STonX-$(VERSION)-1.*.rpm .
+#        rm -rf rpmtmp#
+#
+#$(RPMDIR)/SOURCES/STonX-$(VERSION).tar.gz: STonX-$(VERSION).tar.gz
+#        cp STonX-$(VERSION).tar.gz $(RPMDIR)/SOURCES/STonX-$(VERSION).tar.gz
 
 # DO NOT DELETE

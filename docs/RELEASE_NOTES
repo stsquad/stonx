@@ -1,3 +1,19 @@
+Release notes for version 0.6.7.4
+=================================
+
+This release fixes issues with TOS1.0
+It also adds the monitor functionality to help debugging
+The configure scripts have been tidied up a bit (--enable-svga,debug,monitor)
+RPM's should be available (let me know if they don't work)
+Audio should now work properly on *BSD systems (with linux audio emulation)
+Some possible buffer overflows have been fixed
+Some fixes to the X driver for high colour
+Can load TOS 1.x and 2.x roms without being recompiled
+
+Basically its long overdue :-)
+
+Alex
+
 Release notes for version 0.6.7.3
 =================================
 
