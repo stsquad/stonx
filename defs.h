@@ -24,20 +24,6 @@
 #include "options.h"
 #include "utils.h"
 
-#if MONITOR
-#undef PCREG
-#undef NZREG
-#undef SRREG
-#ifdef __linux__
-#include <ncurses/ncurses.h>
-#else
-#include <curses.h>
-#endif
-#define sr my_sr
-#define L my_L
-#define reg reg0
-#endif
-
 #if defined(__GNUC__) && defined(PCREG)
 register L pc asm (PCREG);
 #else
