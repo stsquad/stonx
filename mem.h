@@ -185,86 +185,69 @@ static INLINE void SU_UL (UL *d, UL v)
 #if defined(__i486__) && !defined(__STRICT_ANSI__)
 
 static INLINE W LM_W(void *s)
-{	register W x=*(W *)s;
+{
+	register W x=*(W *)s;
 	asm ( "rolw $8,%0\n" : "=c" (x) : "c" (x));
 	return x;
 }
 
 static INLINE UW LM_UW(void *s)
-{	register UW x=*(UW *)s;
+{
+	register UW x=*(UW *)s;
 	asm ( "rolw $8,%0\n" : "=c" (x) : "c" (x));
 	return x;
 }
 
 static INLINE L LM_L(void *s)
-{	register UL y=*(L *)s,x;
+{
+	register UL y=*(L *)s,x;
 	asm ( "bswap %0\n" : "=S" (x) : "S" (y));
 	return x;
 }
 
 static INLINE UL LM_UL(void *s)
-{	register UL y=*(UL *)s,x;
+{
+	register UL y=*(UL *)s,x;
 	asm ( "bswap %0\n" : "=S" (x) : "S" (y));
 	return x;
 }
 
-#ifdef COMPILE_WITHOUT_OPTIMIZATION
-/* Remark: This only works with option -O0 not with -O3 */
-static INLINE void SM_W(void *d, W v)
-{	asm ( 	"xchgb %%ch,%%cl\n\t"
-		"movw %%cx,(%%esi)\n"   
-        : "=c" (v)
-        : "c" (v), "S" (d));
-}
-#else
 static INLINE void SM_W(void *d, W v)
 {
-#if SWAP_STORE_IN_MEMORY
-        STORE_W(d,((v&0xff)<<8)|((v>>8)&0xff));
-#else
-        B *ds = (B *)d;
-	UB *du = (UB *)d;
-	STORE_B(ds,v>>8);
-	STORE_UB(du+1,v&0xff);
-#endif
+	asm volatile (
+		"xchgb %%ch,%%cl\n\t"
+		"movw %%cx,(%%esi)\n"   
+		: "=c" (v)
+		: "c" (v), "S" (d)
+	);
 }
-#endif /* COMPILE_WITHOUT_OPTIMIZATION */
 
-#ifdef COMPILE_WITHOUT_OPTIMIZATION
-/* Remark: This only works with option -O0 not with -O3 */
-static INLINE void SM_UW(void *d, UW v)
-{	asm ( 	"xchgb %%ch,%%cl\n\t"
-		"movw %%cx,(%%esi)\n"   
-	: "=c" (v)
-        : "c" (v), "S" (d));
-}
-#else
 static INLINE void SM_UW(void *d, UW v)
 {
-#if SWAP_STORE_IN_MEMORY
-        STORE_UW(d,(v<<8)|(v>>8));
-#else
-        UB *du = (UB *)d;
-        STORE_UB(du,v>>8);
-        STORE_UB(du+1,v&0xff);
-#endif
+	asm volatile (
+		"xchgb %%ch,%%cl\n\t"
+		"movw %%cx,(%%esi)\n"   
+		: "=c" (v)
+		: "c" (v), "S" (d)
+	);
 }
-#endif /* COMPILE_WITHOUT_OPTIMIZATION */
 
 static INLINE void SM_L(void *d, L v)
-{	asm (	"bswap %0\t\n"
+{
+	asm (	"bswap %0\t\n"
 		"movl %0,(%1)\n"   
-        : 
-        : "S" (v), "D" (d)
-        );
+		: 
+		: "S" (v), "D" (d)
+	);
 }
 
 static INLINE void SM_UL(void *d, UL v)
-{	asm ( 	"bswap %0\n\t"
+{
+	asm ( 	"bswap %0\n\t"
 		"movl %0,(%1)\n"   
-        : 
-        : "S" (v), "D" (d)
-        );
+		: 
+		: "S" (v), "D" (d)
+	);
 }
 
 #else
