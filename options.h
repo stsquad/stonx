@@ -117,7 +117,9 @@
 
 /* Set this to 1 if you want a Monitor with which to observe the */
 /* internal state of the emulator and trace through the code     */
+#ifndef MONITOR
 #define MONITOR 0
+#endif
 
 
 
