@@ -1,4 +1,6 @@
-The STonX cartridge.img file                               21 Aug 2001
+
+
+    The STonX cartridge.img file
 
 
 STonX needs a cartridge to function properly with TOS. If the cartridge
@@ -9,8 +11,9 @@ because it implements some very lowlevel functionality. The TOS
 executes the cartridge while initializing itself. So it is the ideal
 point to change some things, which are needed for the emulator to work.
 
-This Cartridge is of type 0. This means, that it is executed after the
-hardware is initialized, memory is set up and the BIOS is initialized.
+This cartridge is of type 8. This means, that it is executed after the
+hardware is initialized, memory is set up and the BIOS is initialized,
+but before the GEMDOS will be started.
 
 After all this happened, it does the following:
 
@@ -29,7 +32,7 @@ at address 0xfa0000. From here we use an offset:
 offset 0x400:
 
 unixfs: This routine is used to support loading code from the native
-unix filesystem. I'm not shure, but I think it is needed to handle
+unix filesystem. I'm not sure, but I think it is needed to handle
 filenames in upper/lower case.
 
 StonX checks natively, if the mode is 0 or 3. If so, CC-register
@@ -47,23 +50,24 @@ Nearly the same happens, if the mode is 3, but the program
 is not executed in the end. A use for this would e.g. be debugging.
 
 
+offset 0xf00:
+
+Shutdown code. A pointer to this address will be inserted in the
+STonX cookie, so that the emulator can be shut down from the Atari
+side. Don't know if this is really used somewhere at the moment...
+
+
 offset 0xff8:
 
 new_trap2: If we use the native vdi, the trap #2 is not sensed by the
 emulator core. Instead the trap #2 vector is bend to this routine and
 this routine implements the native emulator vdi interface.
 
+
 offset 0x1400:
 
 resvec: The reset vector is bend to this routine. It is just a dummy,
 so that no changes to the video subsystem are done by TOS.
-
-offset 0x2000:
-
-disp: This will be the STonX configuration menu. As far as I know, it
-is not implemented yet. If done, you will have the possibility to
-reboot or stop STonX from a program.
-
 
 
 
@@ -95,4 +99,4 @@ recognized as a cartridge by TOS.
 
 
 
--- Martin Doering
+-- Martin Doering & The STonX development team

@@ -547,22 +547,6 @@ void ex_trap(int n)
 	  DT(("GEMDOS(%02x) -> %lx\n", nw));
 	  break;
       case T_TRAP_GEM:
-#if NOTYET
-	  if (DREG(0) == 200)	/* AES */
-	  {
-	      nw = LM_UL(EXCEPTION_VECTOR(n));
-	      DT(("AES(%08x) -> %lx\n", DREG(1), nw));
-#if REDRAW && 0
-	      if (redraw_flag)
-	      { /* window must be updated, pretend form_dial(FMD_FINISH,...) */
-		  nw = CART_AES_REDRAW;
-		  redraw_flag = 0; /* important! */
-	      }
-#endif /* REDRAW && 0 */
-	      if (Aes())
-		  return;
-	  } else
-#endif /* NOTYET */
 	  if (DREG(0) == 115)
 	  {
 	      nw = LM_UL(EXCEPTION_VECTOR(n));
@@ -646,24 +630,15 @@ void EXCEPTION (int n)
 #if 1
     if (n == 34 && vdi_mode)
     {
-#if REDRAW
-	if (DREG(0) == 200 && redraw_flag)	/* AES */
+	if (DREG(0) == 115)
 	{
-	    /* window must be updated, pretend form_dial(FMD_FINISH,...) */
-	    newpc = 0xfa0100;
-	    redraw_flag = 0; /* important! */
+	    if (Vdi()) return;
+	    PUSH_UL(DREG(1));
+	    PUSH_UL(pc);
+	    PUSH_UL(6);
+	    PUSH_UW(0xa0ff);
+	    pc=SP;
 	}
-	else
-#endif
-	    if (DREG(0) == 115)
-	    {
-		if (Vdi()) return;
-		PUSH_UL(DREG(1));
-		PUSH_UL(pc);
-		PUSH_UL(6);
-		PUSH_UW(0xa0ff);
-		pc=SP;
-	    }
     }
 #endif
     if (!SUPERVISOR_MODE)
@@ -749,13 +724,7 @@ static void process_flags (unsigned int iw)
 static void process_flags (void)
 {
 #endif
-	if (flags & F_CONFIG)
-	{
-		/* fix stack here... */
-		flags &= ~F_CONFIG;
-		exception(0,0xfa2000);
-		return;
-	}
+
 #if TIMER_A
 #if 0
 	if (timer_a)

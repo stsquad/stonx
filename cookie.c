@@ -2,13 +2,15 @@
  * Part of STonX
  */
 
-#include "m68k-stuff/m68k_stuff_dump.h"
 #include <string.h>
 #include <stdio.h>
+
 #include "mem.h"
 #include "version.h"
 #include "screen.h"
 #include "main.h"
+#include "cartridge/cartridge.h"
+
 
 static int init_done = 0;
 
@@ -94,8 +96,7 @@ void init_cookie(void) {
 	    if ( vdi )
 		flags |= 0x00000020;
 	    SM_UL( MEM(cookie + 24), flags );
-	    SM_UL( MEM(cookie + 28), cookie + 32 );
-	    memcpy( MEM(cookie + 32), m68k_stuff_dump, m68k_stuff_dump_size );
+	    SM_UL( MEM(cookie + 28), CART_SHUTDOWN );
 	    /* We do this very correct (at STonX we could do it more easy) */
 	    SM_UL( MEM(cookieadr + 8), 0 );
 	    SM_UL( MEM(cookieadr + 12), cnt );

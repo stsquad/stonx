@@ -144,7 +144,7 @@ extern UL shadow_pc;
 #define F_200HzB	0x0100
 #define F_PROFILE	0x0200
 #define F_TIMERA_ON	0x0400
-#define F_CONFIG	0x0800
+/*#define F_CONFIG	0x0800*/ /* Not needed */
 #define F_HBL           0x1000
 
 extern L dreg[];

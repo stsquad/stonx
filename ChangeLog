@@ -1,3 +1,10 @@
+2001-12-29 Thomas Huth
+	* Merged the shutdown code from the m68k-stuff folder into the cartridge
+	* Removed the menu stuff from the cartridge (it never worked and it is
+          a quite stupid idea to write an emulator menu for the VT52 console).
+	* Removed the Makefile and related files in the mint/ folder since
+          they do not fit at all into the autoconf scheme.
+
 2001-10-10 Thomas Huth
         * Updated the new cartridge.img - it should now work with both,
           EmuTOS and normal TOS versions!

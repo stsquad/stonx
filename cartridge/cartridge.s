@@ -417,6 +417,28 @@ oldgemdosmsg:
 
 
 |============================================================================
+| Shutdown code for the STonX cookie (see cookie.c).
+| - Don't know if this is used at all - (Thothy)
+	.equ	OPC_NATIVE,	0xa0ff		| Opcode of native call
+	.equ	SBC_STX_FS,	0x00010000	| Subcodes for STonX-fs
+	.equ	SBC_STX_FS_DEV,	0x00010100	| Subcodes for STonX-fs dev
+	.equ	SBC_STX_SER,	0x00010200	| Subcodes for STonX-fs Serial
+	.equ	SBC_STX_COM,	0x00010300	| Subcodes for STonX-fs communi
+	.equ    SBC_STX_BYPASS, 0x00010400      | Subcodes for STonX Bypass
+	.equ	SBC_STX_SHTDWN,	0x00008000	| Subcodes for STonX Shutdown
+
+	.org 0x0f00
+shutdown:				| L _cdecl shutdown(UW mode)
+	move.w	4(A7),D0
+	move.w	D0,-(A7)
+	moveq.l	#-32,D0			| if call, does not work correct
+	.dc.w	OPC_NATIVE
+	.dc.l	SBC_STX_SHTDWN
+	addq.l	#4,A7
+	rts
+
+
+|============================================================================
 | new_trap2 - entry point for nativly implemented VDI
 
 	.org 0xff8
@@ -455,100 +477,6 @@ resvec:
 	jmp (a6)
 
 
-
-|============================================================================
-| disp - the STonX configuration menu (not implemented yet)
-
-	.org 0x2000
-	movem.l d0-a6,-(sp)
-	moveq #1,d7
-disp:
-	move.l #conf_text,a6
-	pea vt52_clear
-	move #9,-(sp)
-	trap #1
-	addq #6,sp
-	moveq #0,d6
-l1:
-	move.l (a6)+,d5
-	beq.s do1
-	addq #1,d6
-	cmp d6,d7
-	bne.s pr
-	pea i_on
-	move #9,-(sp)
-	trap #1
-	addq #6,sp
-pr:
-	move.l d5,-(sp)
-	move #9,-(sp)
-	trap #1
-	addq #6,sp
-	cmp d6,d7
-	bne.s do2
-	pea i_off
-	move #9,-(sp)
-	trap #1
-	addq #6,sp
-do2:
-	pea crlf
-	move #9,-(sp)
-	trap #1
-	addq #6,sp
-	bra.s l1
-do1:
-	move #7,-(sp)
-	trap #1
-	addq #2,sp
-	cmp.l #0x00480000,d0
-	bne.s nx1
-	cmp #1,d7
-	beq.s do1
-	subq #1,d7
-	bra disp
-nx1:
-	cmp.l #0x00500000,d0
-	bne.s nx2
-	cmp d6,d7
-	beq.s do1
-	addq #1,d7
-	jmp.s disp
-nx2:
-	cmp.l #0x001c000d,d0
-	bne.s do1
-	cmp #1,d7
-	beq.s ret0
-	bra do1
-ret0:
-	movem.l (sp)+,d0-a6
-	rte
-conf_text:
-	dc.l t_return
-	dc.l t_warm
-	dc.l t_cold
-	dc.l t_quit
-	dc.l 0
-
-t_warm:
-	.ascii "Warm reset\0"
-t_cold:
-	.ascii "Cold reset\0"
-t_quit:
-	.ascii "Quit STonX\0"
-t_return:
-	.ascii "Return to emulator\0"
-t_test:
-	.ascii "CART: ========= TEST ============\0"
-
-	.even
-i_on:
-	dc.l 0x1b700000
-i_off:
-	dc.l 0x1b710000
-crlf:
-	dc.l 0x0a0d0000
-vt52_clear:
-	dc.l 0x1b450000
 
 |============================================================================
 | cart_end - End of cartridge

@@ -751,8 +751,6 @@ void x_process_events(void)
 		      stonx_exit();
 		      exit(0);
                       #endif
-#else /* SHIFT_PAUSE_EXITS */
-		  flags |= F_CONFIG;
 #endif /* SHIFT_PAUSE_EXITS */
 		  }
 #if GRABMODE

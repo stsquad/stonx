@@ -26,6 +26,8 @@ LDFLAGS =-Ttext=0xfa0000 -oformat binary
 # The objdump utility (disassembler)
 OBJDUMP = m68k-atari-mint-objdump
 
+all: cartridge.img
+
 cartridge.img: cartridge.o 
 	${LD} ${LDFLAGS} -o $@ cartridge.o
 

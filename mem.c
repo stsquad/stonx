@@ -31,7 +31,7 @@ void init_mem (void)
 		fprintf(stderr,"Initializing memory for custom screen size... (top=%lx)\n",(long)new_top);
 #if 0
 		SM_UL(MEM(0x426),0x31415926);
-		SM_UL(MEM(0x42a),0xfa1400);
+		SM_UL(MEM(0x42a),CART_RESVEC);
 #endif
 		SM_UL(MEM(0x4ba),16000);
 		SM_UL(MEM(0x436),new_top);

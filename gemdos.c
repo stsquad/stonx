@@ -3,7 +3,9 @@
  * STonX is free software and comes with NO WARRANTY - read the file
  * COPYING for details
  */
+
 #include "defs.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,12 +28,15 @@
 #endif
 #include <fcntl.h>
 #include <dirent.h>
+
 #include "debug.h"
 #include "main.h"
 #include "utils.h"
 #include "tosdefs.h"
 #include "native.h"
 #include "toserror.h"
+#include "cartridge/cartridge.h"
+
 
 #if 1
 #define STATFUNC stat
@@ -1292,8 +1297,8 @@ void init_gemdos (void)
      * in cartridge (hope it doesn't move!)
      */
 
-    SM_L(MEM(0xfa0400),LM_L(MEM(0x84)));
-    SM_L(MEM(0x84),0xfa0404);
+    SM_L(MEM(CART_OLD_GEMDOS), LM_L(MEM(0x84)));
+    SM_L(MEM(0x84), CART_NEW_GEMDOS);
     o = LM_UL(MEM(8+LM_UL(MEM(0x4f2))));
     if (LM_UW(MEM(o+2)) < 0x102)
     {
