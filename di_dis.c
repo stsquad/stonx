@@ -1060,7 +1060,7 @@ static UWORD *effective_address(UWORD *a,char *s,UWORD ea,WORD index,WORD op_mod
 			{
 				case 0:		/*	absolute short	*/
 					++a;
-					short_adr = (WORD)*a;
+					short_adr = LM_UW(MEM(a));
 					sprintf(s,"$%lx.S",(long)short_adr);
 					break;
 				case 1:		/*	absolute long	*/
