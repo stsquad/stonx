@@ -1,6 +1,6 @@
 dnl This is the the source file used to produce the configure script
 AC_INIT(defs.h)
-version="0.6.7.4 Development"
+version="0.6.7.4pre1"
 AC_SUBST(version)
 echo "Configuring STonX version $version..."
 echo "#define VERSION \"$version\"">version.h
