@@ -38,14 +38,20 @@ extern int snd_porta;
 #include <sys/time.h>
 #include <sys/ioctl.h>
 #define HAVE_AUDIO
-#ifdef __linux
+#if defined(__linux)
 #include <linux/soundcard.h>
+#define SOUND_DEVICE "/dev/dsp"
 #if 0
 #include <linux/sched.h>
 #include <linux/unistd.h>
 #endif
-#else /* FreeBSD? */
-#include <machine/soundcard.h>
+#elif defined(__NetBSD__)
+/* NetBSD's Linux API emulation, require -lossaudio too */
+#include <soundcard.h>
+#define SOUND_DEVICE "/dev/audio"
+#else
+#warning unknow sound system
+#define SOUND_DEVICE "/dev/dsp"
 #endif
 #include <unistd.h>
 #define LINUX_DEFAULT_FREQ (44100)
@@ -933,7 +939,7 @@ void audio_update(void)
  
 static void LINUX_audio_open(void)
 {	int tmp,ret;	
-	devAudio = open("/dev/dsp", O_RDWR | O_NDELAY, 0);
+	devAudio = open(SOUND_DEVICE, O_RDWR | O_NDELAY, 0);
   	if (devAudio == -1)
   	{	fprintf(stderr,"Linux Audio:Can't Open Audio device\n");
 		exit(1);
