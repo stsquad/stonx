@@ -12,6 +12,9 @@ In order to compile STonX, you will need the following:
  
 These will suffice to get you started (unless I've forgotten something). 
 
+If you want to recompile the m68k part of STonX (normally not needed), you
+will need a m68k cross compiler, too!
+
 
 CONFIGURATION
 =============
@@ -32,20 +35,24 @@ This will generate a `Makefile', link `config.h' to the appropriate file from
 the `config' subdirectory and generate dependencies for the Makefile. It will
 also generate some more sources.
 
-If the `configure' script fails, please contact me at nino@complang.tuwien.ac.at
-and send me the output it generated. 
+If the `configure' script fails, please contact the STonX mailing list at
+ stonx-development@lists.sourceforge.net
+and send the output the script generated. 
+
+If you don't use a i86 system or if you want to recompile the m68k part of
+STonX with a cross compiler, you will have to edit the file CONFIGVARS as well.
+Have especially a look at the line with REGS=... !
 
 
 ADDITIONAL CONFIGURATION OPTIONS
 ================================
 
 After generating the Makefile, look at the file `options.h' (sparsely commented)
-and see if there is anything you want to change. The only options that you might
-need to change are TOS_1 (set to 1 is you have a TOS 1.0, 1.2 or 1.4 image)
-and SMALL (check if this is defined in the `config.h' as well), which should
-be set to 1 if your system has less than 16MB physical memory or if linking
-fails otherwise (it will result in an emulator which emulates 4MB RAM instead
-of 14MB, and takes up approximately 9MB swap space instead of 17MB).
+and see if there is anything you want to change. The only option that you might
+need to change is SMALL (check if this is defined in the `config.h' as well),
+which should be set to 1 if your system has less than 16MB physical memory or
+if linking fails otherwise (it will result in an emulator which emulates 4MB
+RAM instead of 14MB, and takes up approximately 9MB swap space instead of 17MB).
 
 
 COMPILING
@@ -55,20 +62,28 @@ To compile, simply type
 	
 	make
 
-at the shell prompt. If you don't copy your TOS image to the directory
-containing the sources named `tos.img' before this point, the `make' process
-will stop after STonX has been linked and tell you to do it now. The TOS image
-is needed at this point in order to generate the Atari system fonts in .pcf
-format. You don't need to do this if you don't want to use the Xlib-VDI
-driver. After copying the TOS image, simply type `make' again to continue. The
-fonts will be extracted from the TOS image and installed temporarily in the
-`data' subdirectory. See the `INSTALLING' section for how to install them
-permanently.
+at the shell prompt.
+
+There are some know problems with the MiNT part of STonX in the mint/ sub-
+directory when compiling on a non-i86 architecture. If your compiler stops
+there, you should disable all MiNT related options in the file options.h!
+
+If you want to use the build in accelerated VDI driver of STonX, you probably
+want to build the fonts for it, too. You can do it with:
+	make fnttobdf
+	make tosfonts
+	make fonts
+Before, you need to copy a TOS image to the directory containing the sources
+and rename it to `tos.img'. The TOS image is needed at this point in order 
+to generate the Atari system fonts in .pcf format. The fonts will be extracted
+from the TOS image and installed temporarily in the `data' subdirectory.
+See the `INSTALLING' section for how to install them permanently.
 
 After STonX has been compiled and linked successfully, you can start it
 by typing
 
 	./stonx
+	(or ./stonvga if you use the SVGA version)
 
 The command-line options can be listed with the `-h' option (`./stonx -h').
 
@@ -76,8 +91,21 @@ The command-line options can be listed with the `-h' option (`./stonx -h').
 INSTALLING
 ==========
 
-At the moment, STonX can only be run from the directory containing the TOS
-image, i.e. there is no automatic system-wide installation. 
+At the moment, there are three possibilities to install STonX:
+1) Copy the executable to a place you like and run it with the command line
+   options "-tos", "-cartridge" and "-kmap" to tell STonX where to find
+   the TOS ROM image, the cartridge image and the Keysyms file.
+2) You can copy the Keysyms file to your home directory and rename it to
+   .stonx.Keysyms and then create a config file for STonX, rename it to
+   ~/.stonxrc and write something like:
+	tos /path/to/tos.img
+	cartridge /path/to/cartridge.img
+   in it.
+   Or you can copy tos.img and cartridge.img into your GEMDOS folder (that
+   must be specified with the "-fs" option).
+3) Make a system-wide installation by typing "make install" - but you need to
+   be root for this. This will create the files /etc/stonxrc and
+   /etc/stonx.Keysyms that you probably need to adapt to your system.
 
 The system fonts should be installed in a place where the X server can find
 them. Examine your default font path with the `xset' command:
@@ -92,5 +120,16 @@ directories in the font path, go to that directory and do a
 
 the fonts will be installed permanently. Note that if you run STonX on a 
 different computer than the one handling your X display, you will have to
-install the fonts on the latter.
+install the fonts on the latter or you'll have to put them in a directory in
+the tftp hierarchy if you use tftp. Also make sure that the directory and the
+fonts are world readable. 
+If you installed the fonts in a separate path (i.e. none of the ones in the
+Font Path shown by "xset q") you need to put something like
+xset fp+ <new path> 
+into your $HOME/.xinitrc or $HOME/.xsession so that the new path is added to
+the system font path every time you start an X session.
+In the newest version of STonX, it will also automatically search in its data
+directory (e.g. /usr/local/share/stonx/).
 
+
+Okay, that's all. Have fun with STonX!

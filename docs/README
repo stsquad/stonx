@@ -1,13 +1,11 @@
-(This file is mostly obsolete as well, but might contain some useful
-information)
 
-      _____   _________           
+      _____   _________
      /     \      |                  \     /
      |            |                   \   /
      \_____       |    ___    ___      \ /     ( ST on  )
            \      |   /   \ |/   \     / \     ( Unix/X )
            |      |   |   | |    |    /   \
-     \_____/      |   \___/ |    |  /      \
+     \_____/      |   \___/ |    |   /     \
       
 
                        VERSION 0.6 
@@ -16,13 +14,17 @@ information)
                (nino@complang.tuwien.ac.at)
       (http://www.complang.tuwien.ac.at/nino/home.html)
 
+               (C) 2001 by various authors
+          (see file AUTHORS for more information)
+        URL: http://sourceforge.net/projects/stonx/
+
 	          ALL RIGHTS RESERVED
  THIS PROGRAM IS PROVIDED "AS IS" WITHOUT A WARRANTY OF ANY KIND
 
 
       See the file `COPYING' for licensing information
 
-         Last change to this file: December 21, 1995
+         Last change to this file: April 2, 2001
 
 This file is separated into 4 sections:
 
@@ -87,11 +89,13 @@ Here is a list of the emulated system components:
                  word-alignment of the screen would cause problems with the
                  ST-Low and -Mid to ZPixmap conversion routines). 
 
-* Disk-I/O       Still very limited. A general FDC/HDC-Emulation would probably
-                 not make sense, except for a few games. A GEMDOS-Driver for
-                 the Unix FS would be very useful. The native interface
-                 (opcode $a0ff, see 'faketos.c') will be helpful in implementing
-                 this.
+* Disk-I/O       Still very limited. Since version 0.6.7, there is a real FDC
+                 in STonX, at least. A HDC emulator would be nice, but hasn't
+                 yet been written
+                 However, STonX can map paths of your file system to GEMDOS
+                 drives, too. And with the new "stonx.xfs" driver for MiNT,
+                 it is even possible to access the whole file system with
+                 long file name support!
 
 * Mega ST(E)     Still buggy, haven't had time to correct it. It gets the hour
   Clock Chip     wrong sometimes, and the alarm timer is not implemented (among
@@ -113,8 +117,10 @@ from the `tos.img' file (which you're going to need anyway), and installs
 them in the `data' subdirectory (see `data/makefonts.sh'). It also installs
 Latin-1 versions of these fonts so that you can use them for you XTerm windows!
 
-Not that although it only implements monochrome routines, the Xlib-VDI Driver
-only runs on 8-bit color displays at the moment (sorry).
+The Xlib-VDI driver works best on 8bpp X server with private colormap at the
+moment. There are still a lot of bugs, especially on high and true color X
+servers.
+
 
 --------------------------------------------------------------------------------
 
@@ -127,7 +133,7 @@ A: If you have GNU-C and X11R5/6 for this system, and STonX still won't compile,
    please let me know as soon as possible, I will try to fix it.
 
 Q: How do I leave the emulator `gently'?
-A: Press all 3 mouse buttons together
+A: Press SHIFT-PAUSE under X11 and F12 when using the SVGALib version.
 
 Q: What do all the warnings mean?
 A: Some keycodes can not be generated, because no mapping is defined for
@@ -135,7 +141,7 @@ A: Some keycodes can not be generated, because no mapping is defined for
    to find suitable Keysyms for mapping the missing ST-Keycodes to.
 
 Q: Why doesn't STonX work on my X display?
-A: Currently, STonX is very choosy about X displays - it requires an 8 bit
+A: Currently, STonX is very choosy about X displays - it works best on 8 bit
    display with PseudoColor visual capabilities. Building a version for
    monochrome displays might be possible by defining -DMONO=1 in the Makefile,
    but don't bet on it.
@@ -154,18 +160,19 @@ A: STonX requires approximately 17MB memory, and during the initialization of
    has not been tested thoroughly, but seems to work.
 
 Q: What TOS versions does STonX work with? Where do I get TOS images?
-A: I tried it with TOS 2.06, other versions haven't been tested, but TOS 
-   versions which support plain STs should work with it. At the moment, you
-   can only use TOS ROM images which normally begin at $E00000 in memory
-   (256K ROMs). TOS is copyrighted, so it would be illegal to distribute
-   a TOS image with STonX. To make a TOS image just copy 256K of memory
-   from $E00000 to a file and put it in the STonX directory with the name
-   `tos.img'.
+A: I tried it with TOS 2.06, other versions might works, too, have a look
+   at the file TOS-VERSIONS. TOS versions which support plain STs should work
+   with it (i.e TOS 1.06, 1.62, 3.0x and 4.0x will _not_ work).
+   You can only use both type of TOS ROM images which begin either at $E00000
+   or at $FC0000 in memory (256K ROMs or 192K ROMs).
+   TOS is copyrighted, so it would be illegal to distribute a TOS image with
+   STonX. To make a TOS image just copy 256K of memory from $E00000 (when using
+   TOS 2.0x) or 192K from $FC0000 (when using TOS 1.0x) to a file and put it
+   in the STonX directory with the name `tos.img'.
 
 Q: What's `cartridge.img' for?
-A: This is an cartridge image which installs the BIOS level disk routines.
-   It is necessary, since there is no FDC emulation (yet). If there was one,
-   the disk routines from TOS could be used.
+A: This is an cartridge image which installs the BIOS level disk routines
+   and some other TOS patches.
 
 Q: How do I get the emulator to load a program?
 A: The emulator can't deal with single programs, only with disks and disk 
@@ -199,7 +206,8 @@ A: Because the emulator has (at the moment) no way to tell where the
    emulated system keeps its mouse cursor positions in memory. When you
    enter the emulator window, you can freeze the ST mouse cursor with the
    right mouse button, move to it with the X cursor, and press the right
-   mouse button again to "pick it up". A better solution is in the works...
+   mouse button again to "pick it up".
+   > This should be fixed in the newest version and no longer occur! <
 
 Q: Why do some keys seem to 'hang' e.g. in Megaroids?
 A: Because the interrupt priorities are bogus, and in some cases data from
@@ -209,8 +217,7 @@ Q: Why can't the mouse be switched off (e.g. in games)?
 A: Because the emulated IKBD doesn't (yet) understand any commands
 
 Q: Where can I get the newest version of STonX? 
-A: Probably at ftp.complang.tuwien.ac.at/pub/nino/ or 
-   http://www.complang.tuwien.ac.at/nino/
+A: Probably at http://sourceforge.net/projects/stonx/
    Don't bet on it though! :-) 
 
 Q: Why do benchmark programs show much better values than what they should?
@@ -224,9 +231,7 @@ Q: When will the VDI driver be finished?
 A: If I knew the answer, I'd probably never have started... :-)
 
 Q: What can I do to speed up the development of STonX?
-A: You can try to bribe me with any amount of money, any type of hardware or
-   software for the Atari ST or SunOS 4.1 (no pirated stuff please).
-   A nice postcard might suffice too. :-)
+A: You can join the STonX development crew at Sourceforge!
 
 --------------------------------------------------------------------------------
 
@@ -324,4 +329,6 @@ Version 0.6 (Dec 21, 1995)
   3) More easily maintainable code
 - experimental implementation of the -size option
 - added Griff's patches to main.c to read options from a $HOME/.stonxrc file
+
+For newer versions, see the file ChangeLog!
 
