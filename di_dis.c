@@ -254,21 +254,29 @@ void *dis(void *c,char *s)
 	UWORD *code;
 	WORD loop;
 	WORD table_entry;
+	UWORD instruction_word;
 
 	code = (UWORD *) c;
+	instruction_word = LM_UW(MEM(code));
+
 	for(i=0,loop = TRUE;(table[i].mask != 0) && loop;++i)
 	{
 		/*	find the first opcode	*/
-		if((LM_UW(MEM(code)) & table[i].mask) == table[i].op_code)
+	  if((instruction_word & table[i].mask) == table[i].op_code)
 		{
 			table_entry = i;
 			loop = FALSE;	/*	stop looping	*/
 		}
 	}
 	if(loop)
-		return(NULL);	/*	some sort of error	*/
-	else
+	  { /* no instruction found - assume data */
+	    sprintf(s,"%6lx   DC.W   #$%x",c,instruction_word);
+	    return (c+2);
+	}
+        else
+        {
 		return((void *)(*table[table_entry].d_funct)(c,s,table_entry));
+        }
 }
 
 static UWORD *type_29(UWORD *c,char *s,WORD index)
@@ -317,7 +325,7 @@ static UWORD *type_26(UWORD *c,char *s,WORD index)
 	WORD source;
 	char e_a[30];
 
-	adr = LM_UL(MEM(c));
+	adr = c;
 	source = LM_UW(MEM(c)) & 0x3f;
 	c = effective_address(c,e_a,source,index,WORD_SIZE);
 	sprintf(s,table[index].op,adr,e_a);
