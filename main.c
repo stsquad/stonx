@@ -33,7 +33,7 @@
 #include "utils.h"
 #include "io.h"
 
-char stonxrc[256];
+char stonxrc[512];
 #define STONXRC "stonxrc"
 #define EQ(_x,_y) (strcmp(_x,_y)==0)
 
@@ -184,8 +184,8 @@ void process_args (int argc, char *argv[], int is_rc)
 	else if (EQ(x,"disk"))
 	{
 	    char d;
-	    char fname[256];	/* use value from limits.h? */
-	    if (i == argc-1 || sscanf(argv[++i],"%c:%s", &d, fname) < 2)
+	    char fname[512];	/* use value from limits.h? */
+	    if (i == argc-1 || strlen(argv[++i])>=510 || sscanf(argv[i],"%c:%s", &d, fname) < 2)
 		error("disk needs an argument of the form <X>:<File> where"
 		      " <X> is a drive letter\n");
 	    if (!add_drive (d, fname))
@@ -196,8 +196,8 @@ void process_args (int argc, char *argv[], int is_rc)
 	else if (EQ(x,"fs"))
 	{
 	    char d;
-	    char fname[256];	
-	    if (i == argc-1 || sscanf(argv[++i],"%c:%s", &d, fname) < 2)
+	    char fname[512];	
+	    if (i == argc-1 || strlen(argv[++i])>=510 || sscanf(argv[i],"%c:%s", &d, fname) < 2)
 		error("fs needs an argument of the form <X>:<directory> where"
 		      " <X> is a drive letter\n");
 	    if (!add_gemdos_drive (d, fname)) 
@@ -354,13 +354,13 @@ void process_stonxrc(void)
     {	
 	FILE *rc = NULL;
 	if ( machine.name ) {
-	    strcpy(stonxrc,home);
+	    strncpy(stonxrc,home,512-7-8);	/* Important: Use strNcpy to prevent buffer overflows! */
 	    strcat(stonxrc,"/."STONXRC".");
 	    strcat(stonxrc,machine.name);
 	    rc = fopen(stonxrc,"r");
 	}
 	if ( !rc ) {
-	    strcpy (stonxrc,home);
+	    strncpy (stonxrc,home,512-7-10);
 	    strcat (stonxrc,"/."STONXRC);
 	    if ((rc=fopen(stonxrc,"r")) == NULL)
 	    {
@@ -511,11 +511,15 @@ int main (int argc, char *argv[])
 #endif
     flags = 0;
     
-    printf ("--------------------------------------------------------------------------------\nSTon%s Version " VERSION "\n(c)1994-1997 by Marinos Yannikos and Martin D. Griffiths\n"
+    printf ("--------------------------------------------------------------------------------\n"
+            "STon%s Version " VERSION "\n(c)1994-1997 by Marinos Yannikos and Martin D. Griffiths\n"
 	    "(c)2001 by Markus Kohm and Till Harbaum\n"
 	    "This program is free software, and comes with NO WARRANTY!\n"
-	    "Read the file COPYING for details. If this copy of STonX was not accompanied\nby a file called `COPYING', containing the GNU GPL text, report this to the\nauthors at nino@complang.tuwien.ac.at immediately!\n--------------------------------------------------------------------------------\n"
-, machine.name ? machine.name : "?" );
+	    "Read the file COPYING for details. If this copy of STonX was not accompanied\n"
+	    "by a file called `COPYING', containing the GNU GPL text, report this to the\n"
+	    "authors at nino@complang.tuwien.ac.at immediately!\n"
+	    "--------------------------------------------------------------------------------\n"
+        , machine.name ? machine.name : "?" );
     fflush(stdout);
     process_stonxrc();
     process_args(argc, argv, 0);
