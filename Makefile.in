@@ -29,15 +29,16 @@ OPT=@copt@
 # Additional header file paths
 INC=-I. @X_CFLAGS@
 
-# for MONITOR=1 we need a System V compatible curses library - I need to
-# write an Autoconf macro to test for that...
 #Linux:
-#INC=@X_CFLAGS@ -I/usr/include/ncurses
+INC=-I. @X_CFLAGS@
 
 # X11 library path
 XLIBS=@X_LIBS@ @X_PRE_LIBS@ -lXext -lX11 @X_EXTRA_LIBS@ @xtra@
 SFLAGS=
-# MONITOR=1:
+# MONITOR flags
+MON_OBJS = @mon_objs@
+MON_FILES = @mon_files@
+
 #Linux:
 #XLIBS=@X_LIBS@ -L../../binutils-2.4 -lopcodes -lbfd -liberty -lncurses
 
@@ -57,7 +58,7 @@ SCC=@SCC@ $(REGS)
 CPP=@CPP@
 
 CFLAGS= $(INC) $(AINC) $(DEF) $(ADEF) $(OPT) $(SFLAGS)
-OBJ=cpu.o monitor.o io.o main.o native.o utils.o ikbd.o debug.o\
+OBJ=cpu.o $(MON_OBJS) io.o main.o native.o utils.o ikbd.o debug.o\
 	blitter.o mem.o audio.o midi.o\
 	gemdos.o ui.o screen.o fdc.o bios.o\
 	syscalls.o memarray.o sfp.o toserror.o\
@@ -161,7 +162,7 @@ fonts-done.stmp:	tosfonts
 	(cd data; ./makefonts.sh) && touch fonts-done.stmp
 
 gen:	gen.c amdefs.h options.h config.h
-	$(CC) -O -o $@ gen.c
+	$(CC) -O -o $@ $(DEF) gen.c
 
 code.m4 code0000.m4 code0300.m4 code0600.m4 code0900.m4 code1200.m4 code1500.m4:	gen 68000.def genhead.c
 	cat genhead.c  >code.m4

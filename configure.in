@@ -230,6 +230,7 @@ case $endian in
 	big) def="$def -DIS_BIG_ENDIAN=1";;
 	little)	def="$def -DIS_BIG_ENDIAN=0";;
 esac
+
 AC_C_INLINE
 if test "n$ac_cv_c_inline" = "nno"; then
   inline=
@@ -297,23 +298,43 @@ def="$def -D$statfs"
 # Now we can create a config.h based on system + enabled features
 #
 
+echo "Creating config.h"
+
 rm -f config.h
 cat $conf > config.h
 
+echo "Checking if you want monitor funtionality"
+
 if test "$enable_monitor" = "yes"; then
 	echo "#define MONITOR 1" >> config.h
+	mon_objs="monitor.o di_dis.o"
+	mon_files="monitor.c di_dis.c"
 fi
 
  
 #ln -s $conf config.h
 
+echo "Checking if you want to debug this puppy"
 
+# Now export the vars we will need to create the makefile
+
+if test "$enable_debug" = "yes"; then
+	echo "old copt was $copt"
+	copt="-O0 -ggdb"
+	echo "new copt now $copt"
+fi	
+
+echo "Creating Makefile from Makefile.in"
+
+echo "REGS:$regs, DEF:$def, XTRA:$xtra"
 
 AC_SUBST(regs)
 AC_SUBST(def)
 AC_SUBST(xtra)
 AC_SUBST(copt)
 AC_SUBST(static)
+AC_SUBST(mon_objs)
+AC_SUBST(mon_files)
 AC_SUBST(MAKEDEPEND)
 SCC="$CC"
 AC_SUBST(SCC)
