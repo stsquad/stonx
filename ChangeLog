@@ -1,3 +1,7 @@
+2003-02-13 Thomas Huth
+    * Changed load_tos() : STonX can now load 512kB ROM images, too
+      (usefull for running EmuTOS).
+
 2003-01-31 Thomas Huth
 	* Improved the Makefile.in ("make install" should work better now).
 	* Updated the documentation a little bit.

@@ -334,6 +334,8 @@ void process_args (int argc, char *argv[], int is_rc)
 		     " -noaudio                  Disable Audio driver\n"
 		     " -chunky                   Use `chunky' update mode\n"
 		     " -warmboot                 Attempt to simulate a warm-boot\n"
+		     " -boot <X>                 Boot from drive <X>:\n"
+		     " -vdi                      Run with accelerated (but ugly) native VDI\n"
 		     " -private                  Use private colormap (speeds -color up)\n"
 		     " -cconws                   Redirect GEMDOS Cconws() function to terminal\n"
 		     " -cartridge <File>         Load cartridgeimage <File> as ROM-port-cartridge\n"
@@ -450,58 +452,77 @@ int stonx_exit(void)
 
 
 
+/**
+ * This function loads a TOS ROM image.
+ */
 int load_tos(void)
 {
     short tosversion;
     FILE *fh;
     char buf[48];
+    long toslength;
+
     fh = fopen(tos_name, "rb");
     if( fh==NULL )
-     {
-	fprintf (stderr, "Error: Can not open `%s'!\n", tos_name);
-	exit(3);
-     }
-    if( fread(buf, 1, 48, fh) != 48 )
-     {
-	fprintf (stderr, "Error: Can not read `%s'!\n", tos_name);
-	exit(3);
-     }
+    {
+      fprintf (stderr, "Error: Can not open `%s'!\n", tos_name);
+      exit(3);
+    }
+    if( fread(buf, 1, 48, fh) != 48 )   /* Read ROM header */
+    {
+      fprintf (stderr, "Error: Can not read `%s'!\n", tos_name);
+      exit(3);
+    }
     fclose(fh);
 
     tosversion = LM_UW(&buf[2]);
-    tosstart = LM_UL(&buf[8]);
+    tosstart = LM_UL((UL *)&buf[8]);
+    tos1 = (tosversion < 0x200);
+
     if (verbose)
-     {
-      fprintf(stderr, "TOS version: %x.%x\n", tosversion>>8, tosversion&0x0FF);
+    {
+      fprintf(stderr, "TOS version: %d.%c%c\n", (tosversion>>8),
+              '0'+((tosversion>>4)&0x0f), '0'+(tosversion&0x0F));
       fprintf(stderr, "TOS ROM address: %lx\n",(long)tosstart);
-     }
+    }
 
-    switch(tosversion>>8)
-     {
-      case 1: tosend=tosstart + 192*1024L; tos1=TRUE; break;
-      case 2: tosend=tosstart + 256*1024L; tos1=FALSE; break;
-      default: fprintf(stderr, "Unknown TOS version!\n"); exit(-1); break;
-     }
-    load_file (tos_name, (char *)MEM(tosstart)); 
+    if(tosversion > 0x500 || tosversion < 0x100
+       || (tosstart != 0xe00000 && tosstart != 0xfc0000))
+    {
+      fprintf(stderr, "%s seems not to be a valid TOS ROM image!\n", tos_name);
+      exit(-1);
+    }
 
-    tosstart=TRIM(tosstart);
-    tosend=TRIM(tosend);
-    tosstart1=tosstart-1;  tosstart2=tosstart-2;  tosstart4=tosstart-4;
-    tosend1=tosend-1;  tosend2=tosend-2;  tosend4=tosend-4;
+    /* Load the TOS ROM image: */
+    toslength = load_file (tos_name, (char *)MEM(tosstart)); 
+
+    if((tosstart == 0xfc0000 && toslength > 192*1024)
+       || (tosstart == 0xe00000 && toslength > 512*1024))
+    {
+      fprintf(stderr, "TOS size is too big!\n");
+      exit(-1);
+    }
+
+    tosstart = TRIM(tosstart);
+    tosend = TRIM(tosstart + toslength);
+
+    tosstart1 = tosstart-1;  tosstart2 = tosstart-2;  tosstart4 = tosstart-4;
+    tosend1 = tosend-1;      tosend2 = tosend-2;      tosend4 = tosend-4;
+
     if(tos1)
-      {
-       romstart=TRIM(CARTSTART);   romstart1=TRIM(CARTSTART-1);
-       romstart2=TRIM(CARTSTART-2);   romstart4=TRIM(CARTSTART-4);
-       romend=tosend;   romend1=tosend1;
-       romend2=tosend2;   romend4=tosend4;
-      }
-     else
-      {
-       romstart=tosstart;   romstart1=tosstart1;
-       romstart2=tosstart2;   romstart4=tosstart4;
-       romend=TRIM(CARTEND);   romend1=TRIM(CARTEND-1);
-       romend2=TRIM(CARTEND-2);  romend4=TRIM(CARTEND-4);
-      }
+    {
+      romstart = TRIM(CARTSTART);     romstart1 = TRIM(CARTSTART-1);
+      romstart2 = TRIM(CARTSTART-2);  romstart4 = TRIM(CARTSTART-4);
+      romend = tosend;                romend1 = tosend1;
+      romend2 = tosend2;              romend4 = tosend4;
+    }
+    else
+    {
+      romstart = tosstart;        romstart1 = tosstart1;
+      romstart2 = tosstart2;      romstart4 = tosstart4;
+      romend = TRIM(CARTEND);     romend1 = TRIM(CARTEND-1);
+      romend2 = TRIM(CARTEND-2);  romend4 = TRIM(CARTEND-4);
+    }
 
     return 0;
 }
@@ -520,14 +541,15 @@ int main (int argc, char *argv[])
     flags = 0;
     
     printf ("--------------------------------------------------------------------------------\n"
-            "STon%s Version " VERSION "\n(c)1994-1997 by Marinos Yannikos and Martin D. Griffiths\n"
-	    "(c)2001 by Markus Kohm and Till Harbaum\n"
+	    "STonX Version " VERSION "\n"
+	    "(c)1994-1997 by Marinos Yannikos and Martin D. Griffiths\n"
+	    "(c)2001-2003 by the STonX development team - http://stonx.sourceforge.net/\n"
+	    "(please read the documentation files for more information).\n"
 	    "This program is free software, and comes with NO WARRANTY!\n"
 	    "Read the file COPYING for details. If this copy of STonX was not accompanied\n"
 	    "by a file called `COPYING', containing the GNU GPL text, report this to the\n"
-	    "authors at nino@complang.tuwien.ac.at immediately!\n"
-	    "--------------------------------------------------------------------------------\n"
-        , machine.name ? machine.name : "?" );
+	    "authors at <stonx-development@lists.sourceforge.net> immediately!\n"
+	    "--------------------------------------------------------------------------------\n");
     fflush(stdout);
     process_stonxrc();
     process_args(argc, argv, 0);
@@ -582,8 +604,9 @@ int main (int argc, char *argv[])
     {
 	char path[500];
 	getcwd(path,500);
-	(void)fprintf (stderr, "No drives specified - using default: `-fs C:%s'\n", path);
-	add_gemdos_drive ('C',path);
+	if (verbose) 
+	    fprintf(stderr, "No drives specified - using: `-fs C:%s'\n", path);
+	add_gemdos_drive ('C', path);
     }
 #endif
     init_debug();

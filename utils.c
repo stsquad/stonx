@@ -3,14 +3,16 @@
  * STonX is free software and comes with NO WARRANTY - read the file
  * COPYING for details
  */
+
 #include "defs.h"
 #include "utils.h"
 #include <stdio.h>
 #include <stdarg.h>
+
 extern int verbose;
 
 
-void load_file (char *file, B *d)
+long load_file (char *file, B *d)
 {
 	FILE *f;
 	long length;
@@ -21,11 +23,13 @@ void load_file (char *file, B *d)
 		fprintf (stderr, "Error: File `%s' not found!\n", file);
 		exit(3);
 	}
-	verbose && fprintf (stderr, "Loading `%s'...\n", file);
+	if (verbose)  fprintf (stderr, "Loading `%s'...\n", file);
+
 	fseek(f, 0, SEEK_END);
-	length=ftell(f);
+	length = ftell(f);
 	fseek(f, 0, SEEK_SET);
-	fread(d, 1, length, f);
+
+	return fread(d, 1, length, f);
 }
 
 

@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 extern void error (char *fmt, ...);
-extern void load_file (char *file, B *d);
+extern long load_file (char *file, B *d);
 
 #ifdef NO_BZERO
 #define bzero(_x,_y) memset(_x,0,_y)
