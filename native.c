@@ -284,7 +284,6 @@ int disk_bpb(int dev)
 
 static void Initialize(void)
 {
-	gemdos_initialized = 0;
 	old_rw = LM_UL(ADDR(0x476));
 	old_bpb = LM_UL(ADDR(0x472));
 	old_init = LM_UL(ADDR(0x46a));
