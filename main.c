@@ -14,7 +14,7 @@
 #else
 #include <unistd.h>
 #endif
-#include <config.h>
+#include "config.h"
 #include "debug.h"
 #include "main.h"
 #include "cpu.h"
