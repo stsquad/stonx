@@ -178,10 +178,10 @@ stonvga: $(OBJ) $(SVGAOBJ) $(MOREOBJ)
 	$(SCC) @static@ -o $@ $(OBJ) $(SVGAOBJ) $(MOREOBJ) $(SVGALIBS)
 
 fnttobdf:	fnttobdf.c
-	$(CC) $(CFLAGS) -o $@ fnttobdf.c $(XLIBS)
+	$(SCC) $(CFLAGS) -o $@ fnttobdf.c $(XLIBS)
 
 tosfonts:	tosfonts.c
-	$(CC) $(CFLAGS) -o $@ tosfonts.c $(XLIBS)
+	$(SCC) $(CFLAGS) -o $@ tosfonts.c $(XLIBS)
 
 clean:
 	rm -f $(OBJ) $(MOREOBJ) $(XOBJ) $(SVGAOBJ) stonx stonvga
