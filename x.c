@@ -286,8 +286,8 @@ static void create_image (int w, int h, int format)
     {
 		DBG("Creating a shared memory XImage\n");
 		image = XShmCreateImage (display, DefaultVisual(display,screen),
-								DisplayPlanes(display,screen), format,
-				 				NULL, &shminfo, w, h);
+								(format == XYBitmap) ? 1 : DisplayPlanes(display,screen),
+				 				format, NULL, &shminfo, w, h);
 		if (image == NULL)
 		{
 			fprintf(stderr,"Error allocating a SHM-Image\n");
@@ -304,7 +304,7 @@ static void create_image (int w, int h, int format)
 			(long)image->bytes_per_line * image->height,(long) SHMMAX);
 		}
 		shminfo.shmaddr = image->data = shmat (shminfo.shmid, 0, 0);
-		if (indexed_color)
+		if (indexed_color || format == XYBitmap)
 		{
 			buf = shminfo.shmaddr;
 		}
@@ -331,7 +331,10 @@ static void create_image (int w, int h, int format)
     	buf = (unsigned char *)malloc (w * h / (format == XYBitmap ? 8 : 1));
 
 		/* we can write to the image directly in these cases: */
-		if (indexed_color || format == XYBitmap) bb=buf;
+		if (indexed_color || format == XYBitmap)
+		{
+			bb=buf;
+		}
 		else
 		{
 			/* need a buffer since display != 8bpp */

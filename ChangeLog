@@ -1,3 +1,6 @@
+2002-12-27 Thomas Huth
+	* Fixed shared-memory code in x.c to also work on my system (Linux/PPC)
+
 2002-10-05 Thomas Huth
 	* Cleaned up configure.in (Endianness auto detection, extra files
 	  in the config/ subdirectory are no longer needed, config.h is
@@ -7,17 +10,17 @@
 2001-12-29 Thomas Huth
 	* Merged the shutdown code from the m68k-stuff folder into the cartridge
 	* Removed the menu stuff from the cartridge (it never worked and it is
-          a quite stupid idea to write an emulator menu for the VT52 console).
+	  a quite stupid idea to write an emulator menu for the VT52 console).
 	* Removed the Makefile and related files in the mint/ folder since
-          they do not fit at all into the autoconf scheme.
+	  they do not fit at all into the autoconf scheme.
 
 2001-10-10 Thomas Huth
-        * Updated the new cartridge.img - it should now work with both,
-          EmuTOS and normal TOS versions!
+	* Updated the new cartridge.img - it should now work with both,
+	  EmuTOS and normal TOS versions!
 
 2001-07-24 Alex Bennee
-	* Fixed uninitialised pointer is FS array causing crash when setting up multiple
-	floppy disk drives.
+	* Fixed uninitialised pointer is FS array causing crash when setting up
+	  multiple floppy disk drives.
 
 2001-07-21 Alex Bennee, STonX-6.7.4
 	* Updated tweaks and fixes to configure/Makefile and new rpm building .spec
