@@ -276,17 +276,20 @@ void set_window_name (Window id, char *name)
 	XStoreName (display, id, name);
 }
 
+
 /* Create a new image for the emulation window, using shared memoy if possible
  */
 static void create_image (int w, int h, int format)
 {
-  int planes;
-  planes = (format == XYBitmap ? 1 : DefaultDepth(display,screen));
+	int planes;
+
+	planes = (format == XYBitmap ? 1 : DefaultDepth(display,screen));
 	Max_x = w-1;
 	Max_y = h-1;
+
 #ifdef SH_MEM
-    if (shmflag && (planes != 1 || shm_mono))
-    {
+	if (shmflag && (planes != 1 || shm_mono))
+	{
 		DBG("Creating a shared memory XImage\n");
 		image = XShmCreateImage (display, DefaultVisual(display,screen),
 								(format == XYBitmap) ? 1 : DisplayPlanes(display,screen),
@@ -324,14 +327,14 @@ static void create_image (int w, int h, int format)
 		XSync(display, False);
 		shmctl(shminfo.shmid, IPC_RMID, 0);
 		shm_used = 1;
-    }
-    else
+	}
+	else
 #endif
 	{
 		unsigned char *bb;
 		DBG("Creating a plain XImage\n");
 		/* 8 because that's what the conversion routines return at the moment*/
-    	buf = (unsigned char *)malloc (w * h / (format == XYBitmap ? 8 : 1));
+		buf = (unsigned char *)malloc (w * h / (format == XYBitmap ? 8 : 1));
 
 		/* we can write to the image directly in these cases: */
 		if (indexed_color || format == XYBitmap)
@@ -345,7 +348,7 @@ static void create_image (int w, int h, int format)
 			DBG("Allocating separate buffer for conversion (size=%ld)\n",(long)w*h*BitmapUnit(display)/8);
 			DBG("buf=%lx, shm=%lx\n",(long)buf,(long)bb);
 		}
-    	image = XCreateImage (display, DefaultVisual(display,screen),
+		image = XCreateImage (display, DefaultVisual(display,screen),
 								format == XYBitmap ?
 								1 : DisplayPlanes(display,screen), format,
 								0, bb, w, h, 16, 0);
@@ -562,7 +565,8 @@ static void remap_key(XKeyEvent *ev, int mode)
 #endif
 
     /*
-     * Belegung von state, abhängig von Modifier-Tasten
+     * state values (depending on modifier keys):
+     *
      *                        -   CAPSLOCK NUMLOCK CL+NL
      * Shift                 0x1    0x3    0x11    0x13
      * Ctrl                  0x4    0x6    0x14    0x16
@@ -582,14 +586,15 @@ static void remap_key(XKeyEvent *ev, int mode)
      */
 
     /*
-     * Das Drücken der AltGr-Taste ignorieren. Wird eine Taste mit
-     * AltGr kombiniert, erkennt man das an state = 0x2000 (s.u.)
+     * Ignore AltGr key down event.(One can check if state = x2000 to test
+     * if another key is combined with AltGr)
      */
     if (keycode == 0x71)
 	return;
 
     /*
-     * Ummappen der AltGr-Codes der deutschen Tatstatur zu ATARI Sonderzeichen
+     * Re-map the AltGr key-codes of the german keyboard to the ATARI ST codes
+     *
      *    PC         Atari
      *  AltGr-Q		@
      *  AltGr-7		{
@@ -600,7 +605,7 @@ static void remap_key(XKeyEvent *ev, int mode)
      *  AltGr-<		|
      *  AltGr-+		~
      */
-    if (state & 0x2000)			/* AltGr + Taste umappen */
+    if (state & 0x2000)			/* Re-map AltGr? */
     {
 #if KB_DEBUG
         DBG( "Remap.\n" );
@@ -608,43 +613,43 @@ static void remap_key(XKeyEvent *ev, int mode)
 	switch (keycode)
 	{
 	  case 0x5e:	/* < */
-	      ikbd_key(0x32, mode);	/* Shift-^ erzeugt | */
+	      ikbd_key(0x32, mode);	/* Shift-^ generates | */
 	      ikbd_key(0x31, mode);
 	      break;
 	      
 	  case 0x23:	/* + */
-	      ikbd_key(0x31, mode);	/* ^ erzeugt ~ */
+	      ikbd_key(0x31, mode);	/* ^ generates ~ */
 	      break;
 	      
 	  case 0x12:	/* 9 */
-	      ikbd_key(0x40, mode);	/* Alt-ä erzeugt ] */
+	      ikbd_key(0x40, mode);	/* Alt-ä generates ] */
 	      ikbd_key(0x30, mode);
 	      break;
 	      
 	  case 0x11:	/* 8 */
-	      ikbd_key(0x40, mode);	/* Alt-ö erzeugt [ */
+	      ikbd_key(0x40, mode);	/* Alt-ö generates [ */
 	      ikbd_key(0x2f, mode);
 	      break;
 	      
 	  case 0x18:	/* q */
-	      ikbd_key(0x40, mode);	/* Alt-ü erzeugt @ */
+	      ikbd_key(0x40, mode);	/* Alt-ü generates @ */
 	      ikbd_key(0x22, mode);
 	      break;
 	      
 	  case 0x13:	/* 0 */
-	      ikbd_key(0x32, mode);	/* Shift-Alt-ä erzeugt } */
+	      ikbd_key(0x32, mode);	/* Shift-Alt-ä generates } */
 	      ikbd_key(0x40, mode);
 	      ikbd_key(0x30, mode);
 	      break;
 	      
 	  case 0x10:	/* 7 */
-	      ikbd_key(0x32, mode);	/* Shift-Alt-ö erzeugt { */
+	      ikbd_key(0x32, mode);	/* Shift-Alt-ö generates { */
 	      ikbd_key(0x40, mode);
 	      ikbd_key(0x2f, mode);
 	      break;
 	      
 	  case 0x14:	/* ß */
-	      ikbd_key(0x32, mode);	/* Shift-Alt-ü erzeugt \ */
+	      ikbd_key(0x32, mode);	/* Shift-Alt-ü generates \ */
 	      ikbd_key(0x40, mode);
 	      ikbd_key(0x22, mode);
 	      break;

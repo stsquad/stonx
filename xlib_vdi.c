@@ -513,9 +513,9 @@ void vdi_init(void)
 		
 		path = XGetFontPath(display, &num_path);
 		for (i = 0; i < num_path; i++)
-		        if (strcmp(path[i], STONXDIR) == 0) /* FIXME: STONXDIR */
+			if (strcmp(path[i], STONXDIR) == 0) /* FIXME: STONXDIR */
 				break;
-		if (i >= num_path)
+		if (i >= num_path && strncmp(":", getenv("DISPLAY"), 1) == 0)
 		{
 			FILE *fh;
 			char fontsdirstr[strlen(STONXDIR)+12];
@@ -524,19 +524,19 @@ void vdi_init(void)
 			/*fprintf(stderr, "\n%s\n", fontsdirstr);*/
 			fh = fopen(fontsdirstr, "r");  /* We try to open fonts.dir in that path */
 			if( fh!=NULL )                 /* We only add on success this path to the FontPath */
-			 {
-			  fclose(fh);
-			  new_path =(char **) malloc((num_path + 1) * sizeof(char *));
-			  for (i = 0; i < num_path; i++)
-				new_path[i] = path[i];
-			  new_path[i] = STONXDIR;
-			  XSetFontPath(display, new_path, num_path + 1);
-			  free(new_path);
-			 }
+			{
+				fclose(fh);
+				new_path =(char **) malloc((num_path + 1) * sizeof(char *));
+				for (i = 0; i < num_path; i++)
+					new_path[i] = path[i];
+				new_path[i] = STONXDIR;
+				XSetFontPath(display, new_path, num_path + 1);
+				free(new_path);
+			}
 		}
 		XFreeFontPath(path);
 	}
-	
+
 	id = xw ? xw : imagewin;
 	for (i = 0; i < 5; i++)
 	{
@@ -552,23 +552,23 @@ void vdi_init(void)
 	for (i = 0; i < SYSFONTS; i++)
 	{
 		sysfont[i] = XLoadQueryFont(display, sysfontname[i]);
-		if (sysfont[i] == NULL)  /* If we can´t load the font... */
-		 {                       /* ...(e.g. the Atari fonts have not been installed)... */
-		  switch(i)              /* ...we try to load a standard font. */
-		   {
-		    case 0:  sysfontname[0]="-*-lucidatypewriter-medium-r-*-*-10-*-*-*-m-*-*-*"; break;
-	            case 1:  sysfontname[1]="-*-lucidatypewriter-medium-r-*-*-12-*-*-*-m-*-*-*"; break;
-	            case 2:  sysfontname[2]="-*-lucidatypewriter-medium-r-*-*-14-*-*-*-m-*-*-*"; break;
-		   }
-		  if( i<3 )  sysfont[i] = XLoadQueryFont(display, sysfontname[i]);  /* Second try */
-                 }
+		if (sysfont[i] == NULL)  /* If we can't load the font... */
+		{                        /* ...we try to load a standard font: */
+			switch(i)
+			{
+			 case 0:  sysfontname[0]="-*-lucidatypewriter-medium-r-*-*-10-*-*-*-m-*-*-*"; break;
+			 case 1:  sysfontname[1]="-*-lucidatypewriter-medium-r-*-*-12-*-*-*-m-*-*-*"; break;
+			 case 2:  sysfontname[2]="-*-lucidatypewriter-medium-r-*-*-14-*-*-*-m-*-*-*"; break;
+			}
+			if( i<3 )  sysfont[i] = XLoadQueryFont(display, sysfontname[i]);  /* Second try */
+		}
 		if (sysfont[i] == NULL)
-		 {
-		  fprintf(stderr, "Could not load font: %s\n", sysfontname[i]);
-		  cleanup(2);
-		 }
+		{
+			fprintf(stderr, "Could not load font: %s\n", sysfontname[i]);
+			cleanup(2);
+		}
 	}
-	
+
 	cxi = XCreateImage(display, visual, 1, XYBitmap, 0, NULL, 16, 16, 16, 2);
 	cmask = XCreatePixmap(display, id, 16, 16, 1);
 	cdata = XCreatePixmap(display, id, 16, 16, 1);
