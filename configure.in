@@ -155,7 +155,7 @@ sparc-sun-solaris*)
 	  echo 'NOTE: To enable SVGAlib support call configure with --enable-svga'
 	  AC_DEFINE(NZREG, "%ebx")
 	  AC_DEFINE(PCREG, "%ebp")
-	  regs="-ffixed-ebx -ffixed-ebp -fomit-frame-pointer -m486 -malign-jumps=2 -malign-functions=4"
+	  regs="-ffixed-ebx -ffixed-ebp -fomit-frame-pointer"
 	  ;;
 	powerpc*)
 	  regs="-fomit-frame-pointer"
