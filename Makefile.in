@@ -22,7 +22,7 @@ STONXDIR=@datadir@/stonx
 
 SHELL=/bin/sh
 MAKEDEPEND=@MAKEDEPEND@
-SUBDIRS = cartridge  # mint
+SUBDIRS = mint
 
 # Register variables (-ffixed-reg)
 REGS= @regs@
