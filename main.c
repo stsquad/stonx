@@ -14,6 +14,7 @@
 #else
 #include <unistd.h>
 #endif
+#include <config.h>
 #include "debug.h"
 #include "main.h"
 #include "cpu.h"
@@ -642,9 +643,9 @@ int main (int argc, char *argv[])
 #endif
     init_hardware();
     init_ikbd();
-    //#if MONITOR
+#if MONITOR
     init_monitor(startinmonitor);
-    //#endif
+#endif
     if (parallel_dev != NULL) 
 	init_parallel();
 #if MODEM1
