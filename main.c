@@ -510,8 +510,7 @@ int load_tos(void)
 
 int main (int argc, char *argv[])
 {
-    char *h;
-    const char *hc;
+
 #if defined(__NeXT__)
     fprintf(stderr,"NOTE: Co-Xist apparently has problems with virtual timers,"
 	    " so I set the\n-realtime flag. Use the option -norealtime"
@@ -595,18 +594,14 @@ int main (int argc, char *argv[])
 
     if ( !tos_name )
     {
-	if ( ( hc = get_gemdos_drive( boot_dev + 'A' ) ) == NULL )
-	{
-	    fprintf(stderr, "Could not load the TOS ROM image file tos.img.\n"
-		    "Use option -tos to specify one or --help to get more information.\n");
-	    return 1;
-	}
-	if ( ( tos_name = malloc( strlen( hc ) + 10 ) ) == NULL )
+	char *h;
+
+	if ( ( tos_name = malloc( strlen( STONXDIR ) + 10 ) ) == NULL )
 	{
 	    perror( "STonX" );
 	    return 1;
 	}
-	strcpy( tos_name, hc );
+	strcpy( tos_name, STONXDIR );
 	if ( ( h = strchr( tos_name, '\0' ) ) != tos_name &&
 	     h[-1] != '/' )
 	    *h++ = '/';
@@ -616,7 +611,10 @@ int main (int argc, char *argv[])
 
     if (!no_cart)
     {
-	if ( !cartridge_name ) {
+	if ( !cartridge_name )
+        {
+	    char *h;
+
 	    if ( ( cartridge_name = malloc( strlen( tos_name ) + 13 ) ) == NULL ) 
 	    {
 		perror( "STonX" );
@@ -631,7 +629,8 @@ int main (int argc, char *argv[])
 	}
 	load_file (cartridge_name, (char *)MEM(0xfa0000));
     }
-    if (audio) 
+
+    if (audio)
 	audio_open();
     machine.screen_open();
 #if MIDI

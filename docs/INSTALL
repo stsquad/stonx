@@ -39,10 +39,6 @@ If the `configure' script fails, please contact the STonX mailing list at
  stonx-development@lists.sourceforge.net
 and send the output the script generated. 
 
-If you don't use a i86 system or if you want to recompile the m68k part of
-STonX with a cross compiler, you will have to edit the file CONFIGVARS as well.
-Have especially a look at the line with REGS=... !
-
 The configure script now accepts a couple of extra options which are:
 
 --enable-monitor
@@ -120,8 +116,6 @@ At the moment, there are three possibilities to install STonX:
 	tos /path/to/tos.img
 	cartridge /path/to/cartridge.img
    in it.
-   Or you can copy tos.img and cartridge.img into your GEMDOS folder (that
-   must be specified with the "-fs" option).
 3) Make a system-wide installation by typing "make install" - but you need to
    be root for this. This will create the files /etc/stonxrc and
    /etc/stonx.Keysyms that you probably need to adapt to your system.
