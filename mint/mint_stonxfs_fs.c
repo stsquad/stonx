@@ -950,7 +950,7 @@ UL mint_fs_pathconf( MINT_FCOOKIE *dir, W which )
 	  return TOS_DP_CASESENS;    /* FIXME: not allways true (MSDOS_FS) */
       case TOS_DP_MODEATTR:
 	  return TOS_DP_FT_REG|TOS_DP_FT_LNK| /* FIXME: not true (MSDOS_FS) */
-	      TOS_DP_FT_DIR|(0777L<<8)|       /* FIXME: -´´- */
+	      TOS_DP_FT_DIR|(0777L<<8)|       /* FIXME: -''- */
 	      0x01;                           /* ReadOnly */
       case TOS_DP_XATTRFIELDS:
 	  return TOS_DP_INDEX|TOS_DP_DEV|TOS_DP_NLINK|
