@@ -1,3 +1,14 @@
+Release notes for version 0.6.7.5
+=================================
+
+This version should now also work on non-Intel (80x86) systems again!
+The configure scripte and Makefile has been improved and modernized
+a little bit.
+The X shared memory support now (hopefully) works again on big endian
+machine.
+And finally, audio is now working on Linux/PPC, too.
+
+
 Release notes for version 0.6.7.4
 =================================
 
