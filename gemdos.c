@@ -1129,10 +1129,10 @@ void Gemdos (UL as)
     n = LM_W(MEM(args));
 
     #if MONITOR
-    signal_monitor (GEMDOS,&n);
+        signal_monitor (GEMDOS,&n);
     #endif
     
-    DBG( "Gemdos %d\n", n);
+    // DBG( "Gemdos %d\n", n);
     
     SET_N();
     switch (n)
@@ -1267,7 +1267,7 @@ void Gemdos (UL as)
     }
 }
 
-int gemdos_initialized=0;
+static int gemdos_initialized=0;
 
 void init_gemdos (void)
 {
@@ -1276,7 +1276,7 @@ void init_gemdos (void)
     if (gemdos_initialized) return;
     gemdos_initialized=1;
     if ( verbose )
-	fprintf(stderr,"Setting up native GEMDOS routines: ");
+	fprintf(stderr,"Setting up native GEMDOS routines (pc=%x): ",pc);
     for (i=0; i<MAXFILES; i++) 
     {
 	file[i].bp = 0;
@@ -1285,6 +1285,13 @@ void init_gemdos (void)
     }
     for (i=0; i<6; i++ )
 	redirect_stdh[i][0] = -1;
+
+    /*
+     * Revector the GEMDOS Trap to Cartridge
+     * set up return address in old_gemdos variable
+     * in cartridge (hope it doesn't move!)
+     */
+
     SM_L(MEM(0xfa0400),LM_L(MEM(0x84)));
     SM_L(MEM(0x84),0xfa0404);
     o = LM_UL(MEM(8+LM_UL(MEM(0x4f2))));
