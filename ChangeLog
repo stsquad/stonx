@@ -1,3 +1,58 @@
+2003-11-21 09:49  Thomas Huth
+
+	* Makefile.in: Added additional check for makedepend to avoid an
+	  error message during configure if no makedepend is available.
+
+2003-11-21 09:40  Thomas Huth
+
+	* xlib_vdi.c: Commented out a useless line that caused some trouble
+	  with the C preprocessor on Mac OS X.
+
+2003-11-21 09:25  Thomas Huth
+
+	* gemdos.c: Added some extra space after a local dirent variable
+	  since dirent.d_name is not big enough on some systems like Irix
+	  5.3
+
+2003-11-20 16:51  Thomas Huth
+
+	* cpu.c, defs.h, gendefs.m4: Renamed the CPU exception defines
+	  since some of them (T_BUSERR, T_ADDRERR and T_TRACE) conflicted
+	  with a system include file on NetBSD/68k.
+
+2003-11-20 16:44  Thomas Huth
+
+	* .cvsignore: Added tosfonts and fnttobdf to the .cvsignore file.
+
+2003-11-16 12:30  Thomas Huth
+
+	* docs/INSTALL: stonx.keysyms has been renamed to stonx/keysyms
+
+2003-11-15 23:03  Thomas Huth
+
+	* native.c: Fixed compiler warning on big-endian machines. (Thanks
+	  to Frank Wille)
+
+2003-11-15 23:01  Thomas Huth
+
+	* main.c: config.h is now correctly included.
+
+2003-11-15 23:00  Thomas Huth
+
+	* Makefile.in: Removed "-I." from the Makefile.in so that <audio.h>
+	  is correctly included in audio.c on Irix 5.3. (Thanks to Frank
+	  Wille)
+
+2003-11-15 22:58  Thomas Huth
+
+	* defs.h: Removed unused defines that caused a conflict on Irix 5.3
+
+2003-11-15 22:57  Thomas Huth
+
+	* x.c, audio.c: Changed C++ comments into normal C comments (for
+	  old compilers)
+
+
 2003-09-20 Thomas Huth, STonX-0.6.7.5
 	* Bugfixes for ABCD and SBCD opcodes.
 	* STonX now quits and no longer hangs when a program stops the CPU
