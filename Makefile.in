@@ -228,7 +228,11 @@ install:
 depend: $(DEPSRC) 
 	cp Makefile Makefile.bak
 	chmod +w Makefile
-	$(MAKEDEPEND) $(INC) $(DEF) $(DEPSRC) 
+	@if test n$(MAKEDEPEND) != nno; then \
+	  echo -n "Running $(MAKEDEPEND)... " ; \
+	  $(MAKEDEPEND) $(INC) $(DEF) $(DEPSRC) ; \
+	  echo "done." ; \
+	fi
 	sed -n '/^# DO NOT DELETE/,$$p' < Makefile > Makefile.tmp
 	sed -n '1,/^# DO NOT DELETE/p' < Makefile > Makefile.new
 	tail +2 Makefile.tmp|\
