@@ -47,7 +47,7 @@ extern Never();
 static UWORD *not_known(UWORD *c,char *s,WORD index);
 static UWORD *type_1(UWORD *c,char *s,WORD index);
 static UWORD *type_2(UWORD *c,char *s,WORD index);
-static UWORD *type_3(UWORD *c,char *s,WORD index);
+static UWORD *type_3(UWORD *c,char *s,WORD index);      /*      SUB,SUBA and others... */
 static UWORD *type_4(UWORD *c,char *s,WORD index);
 static UWORD *type_5(UWORD *c,char *s,WORD index);
 static UWORD *type_6(UWORD *c,char *s,WORD index);
@@ -228,6 +228,7 @@ static const OP_DEF table[] = {
 	"ROXL",0xe5c0,0xffc0,type_11,
 	"ROXR",0xe4c0,0xffc0,type_11,
 	"SUBQ",0x5100,0xf100,type_6,
+	"SUBA",0x90c0,0xf0c0,type_3,   /* SUBA can look like a SUBX! */
 	"SUBX",0x9100,0xf130,type_14,
 	"SUB",0x9000,0xf000,type_3,
 	NULL,0,0,not_known
@@ -894,23 +895,23 @@ static UWORD *type_3(UWORD *c,char *s,WORD index)
 
 	adr = (long)c;
 	dest_reg = (LM_UW(MEM(c)) & 0x0e00) >> 9;	/*	get destination reg	*/
-	source = LM_UW(MEM(c)) & 0x3f;				/*	this is an effective address	*/
+	source = LM_UW(MEM(c)) & 0x3f;			/*	this is an effective address	*/
 	op_mode = (LM_UW(MEM(c)) & 0x01c0) >> 6;	/*	get op mode	*/
 	if(op_mode == 3 || op_mode == 7)
 	{
-		dir = 1;
+	  dir = 0; /*was 1*/
 		regs = adr_regs;
-		if(op_mode = 3)
-			size = 1;
+		if(op_mode == 3)
+		  size = 1; /*WORD*/
 		else
-			size = 2;
+		  size = 2; /*LONG*/
 	}
 	else
 	{
 		regs = data_regs;
 		size = op_mode & 0x03;
 		dir = (op_mode & 0x4) >> 2;		/*	direction	*/
-		op_mode = xlate_size(&size,0);
+		/*op_mode = xlate_size(&size,0); optimise*/
 	}
 	op_mode = xlate_size(&size,0);
 	c = effective_address(c,e_a,source,index,op_mode);	/*	do effective address	*/
