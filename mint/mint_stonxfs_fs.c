@@ -37,16 +37,14 @@
 #endif
 
 #include <sys/stat.h>
-#if defined(STATFS_USE_STATVFS)
-#include <sys/statvfs.h>
-#elif defined(STATFS_USE_VFS)
-#include <sys/vfs.h>
-#elif defined(STATFS_USE_MOUNT)
+#if defined(STATFS_USE_MOUNT)
 #include <sys/param.h>
 #include <sys/mount.h>
 #elif defined(STATFS_USE_STATFS_VMOUNT)
 #include <sys/statfs.h>
 #include <sys/vmount.h>
+#else
+#include <sys/vfs.h>  
 #endif
 #include <unistd.h>
 #include <string.h>
