@@ -530,13 +530,13 @@ static UWORD *type_20(UWORD *c,char *s,WORD index)
 	/*	BTST # type instruction	*/
 	long adr;
 	WORD dest;
-	long il_data;	/*	imediate data	*/
+	UWORD il_data;	/*	imediate data	*/
 	char e_a[40];
 
 	adr = (long)c;
 	dest = LM_UW(MEM(c)) & 0x3f;
 	++c;	                                         /*	point to immeadieate data	*/
-	il_data = LM_UL(MEM(c));
+	il_data = LM_UW(MEM(c));
 	c = effective_address(c,e_a,dest,index,0);
 	sprintf(s,"%6lx   %s  #$%lx,%s",adr,table[index].op,il_data,e_a);
 	++c;
