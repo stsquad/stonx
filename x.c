@@ -1577,12 +1577,12 @@ void x_init_keys(void)
     int i, l=0, j;
     FILE *f = NULL;
     char b[1000], x[1000], y[1000];
-    char kdefsfile[256];
+    char kdefsfile[512];
     keycodes = (int *)malloc(sizeof(int)*(kmax+1));
     for (i=0; i<=kmax; i++)
 	keycodes[i] = ST_UNDEF;
     if ( key_filename ) {
-	strcpy( kdefsfile, key_filename );
+	strncpy( kdefsfile, key_filename , 512);	/* Important: Use strNcpy to prevent buffer overflows! */
 	f = fopen( kdefsfile, "r" );
     } 
     else 
@@ -1590,7 +1590,7 @@ void x_init_keys(void)
 	char *home=getenv("HOME");
 	if ( home )
 	{
-	    strcpy( kdefsfile, home );
+	    strncpy( kdefsfile, home , 512-16);
 	    strcat( kdefsfile, "/.stonx.Keysyms" );
 	    f = fopen( kdefsfile, "r" );
 	}
