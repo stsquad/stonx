@@ -1,7 +1,7 @@
 AC_INIT(defs.h)
 version="0.6.7.3"
 AC_SUBST(version)
-echo "Configuring STonX4MiNT version $version..."
+echo "Configuring STonX version $version..."
 echo "#define VERSION \"$version\"">version.h
 echo "#define STONX_VERSION_MAJOR 0">>version.h
 echo "#define STONX_VERSION_MINOR 6">>version.h
@@ -19,8 +19,7 @@ else
 copt="-Wall -Wno-unused -O3"
 changequote(,)dnl
 v=`$CC -v 2>&1|grep version|sed 's,.*version \([1-9][0-9.]*\)$,\1,'`
-if test "`echo $v|sed -e 's/\.//g' -e 's/[^0-9]*//' -e 's/ .*//'`" -lt
-245; then
+if test "`echo $v|sed -e 's/\.//g' -e 's/[^0-9]*//' -e 's/ .*//'`" -lt 245; then
 	echo "You have only version $v, please install a newer version of gcc!"
 	exit 1
 else
