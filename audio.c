@@ -6,8 +6,6 @@
  *	Sound Emulation Routines,
  *	Martin GRIFFiths, 1995.
  *      Till Harbaum, 2001
- *
- *	Last Updated : Febuary 13th 2001. 
  */
 
 /*
@@ -423,7 +421,7 @@ static int SquarewaveW[16] =
 static int *clip_tab;
 static int clip_table[512];
 static unsigned char envs[16][ENV_SIZE*4];
-static char Noise_Table[NOISE_SIZE];
+static signed char Noise_Table[NOISE_SIZE];
 static int Envelope[MAX_SAMPLES];
 static int Noise[MAX_SAMPLES];
 static int mix_buffer[MAX_SAMPLES];
