@@ -1165,7 +1165,7 @@ echo "#define VERSION \"$version\"">version.h
 echo "#define STONX_VERSION_MAJOR 0">>version.h
 echo "#define STONX_VERSION_MINOR 6">>version.h
 echo "#define STONX_PATCH_MAJOR 7">>version.h
-echo "#define STONX_PATCH_MINOR 4">>version.h
+echo "#define STONX_PATCH_MINOR 5">>version.h
 
 #### PROGRAMS
 
