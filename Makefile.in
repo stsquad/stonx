@@ -147,15 +147,7 @@ configure:	configure.in
 
 fonts:	fonts-done.stmp
 
-fonts-done.stmp:	tosfonts 
-	@if test ! -f tos.img; then \
-	echo "Please copy a TOS image to this directory as tos.img"; \
-	exit 1; \
-	fi; \
-	echo "Making the System fonts..."; \
-	test -d data || mkdir data; \
-	./tosfonts <tos.img; \
-	mv System?.fnt data; \
+fonts-done.stmp:	tosfonts fnttobdf
 	(cd data; ./makefonts.sh) && touch fonts-done.stmp
 
 gen:	gen.c amdefs.h options.h config.h
