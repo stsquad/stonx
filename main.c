@@ -66,6 +66,7 @@ int chunky=0;
 int timer_a=0;
 int no_cart=0;
 int fullscreen=0;
+int startinmonitor=0;
 char *cartridge_name=NULL;
 char *tos_name=NULL;
 
@@ -243,6 +244,10 @@ void process_args (int argc, char *argv[], int is_rc)
 	{
 	    redirect_cconws=1;
 	}
+	else if (EQ(x,"monitor"))
+	{
+	    startinmonitor=1;
+	}
 	else if (EQ(x,"h") || EQ(x,"?") || EQ(x,"-help"))
 	    u=1;
 	else if (EQ(x,"cartridge"))
@@ -321,6 +326,9 @@ void process_args (int argc, char *argv[], int is_rc)
 		     " -para <file>              Use <file> as the parallel port device\n"
 #if MODEM1
 		     " -serial <file>            Use <file> as the serial port device\n"
+#endif
+#if MONITOR
+		     " -monitor                  Start in Monitor\n"
 #endif
 		     " -noaudio                  Disable Audio driver\n"
 		     " -chunky                   Use `chunky' update mode\n"
@@ -634,9 +642,9 @@ int main (int argc, char *argv[])
 #endif
     init_hardware();
     init_ikbd();
-#if MONITOR
-    init_monitor();
-#endif
+    //#if MONITOR
+    init_monitor(startinmonitor);
+    //#endif
     if (parallel_dev != NULL) 
 	init_parallel();
 #if MODEM1
