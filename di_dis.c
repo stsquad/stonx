@@ -40,9 +40,6 @@ typedef struct {
 /*
 ** tables for disasembler code
 */
-#ifdef MEGAMAX
-extern Never();
-#endif
 
 static UWORD *not_known(UWORD *c,char *s,WORD index);
 static UWORD *type_1(UWORD *c,char *s,WORD index);
@@ -270,7 +267,7 @@ void *dis(void *c,char *s)
 	}
 	if(loop)
 	  { /* no instruction found - assume data */
-	    sprintf(s,"%6lx   DC.W   #$%x",c,instruction_word);
+	    sprintf(s,"%6lx   DC.W   #$%x",(long)c,instruction_word);
 	    return (c+2);
 	}
         else
@@ -287,7 +284,7 @@ static UWORD *type_29(UWORD *c,char *s,WORD index)
 	WORD displacement;
 	UWORD direction;
 
-	adr = c;
+	adr = (ULONG) c;
 	data_reg = (LM_UW(MEM(c)) & 0x0e00) >> 9;
 	adr_reg = LM_UW(MEM(c)) & 0x07;
 	direction = LM_UW(MEM(c)) & 0x080;
@@ -325,7 +322,7 @@ static UWORD *type_26(UWORD *c,char *s,WORD index)
 	WORD source;
 	char e_a[30];
 
-	adr = c;
+	adr = (long) c;
 	source = LM_UW(MEM(c)) & 0x3f;
 	c = effective_address(c,e_a,source,index,WORD_SIZE);
 	sprintf(s,table[index].op,adr,e_a);
@@ -546,7 +543,7 @@ static UWORD *type_20(UWORD *c,char *s,WORD index)
 	++c;	                                         /*	point to immeadieate data	*/
 	il_data = LM_UW(MEM(c));
 	c = effective_address(c,e_a,dest,index,0);
-	sprintf(s,"%6lx   %s  #$%lx,%s",adr,table[index].op,il_data,e_a);
+	sprintf(s,"%6lx   %s  #$%x,%s",adr,table[index].op,(int)il_data,e_a);
 	++c;
 	return(c);
 }
@@ -575,7 +572,7 @@ static UWORD *type_18(UWORD *c,char *s,WORD index)
 	WORD dest;
 	WORD source;
 	WORD op_mode;
-	char *rx,*ry;
+	const char *rx,*ry;
 
 	adr = (long)c;
 	dest = LM_UL(MEM(c)) & 0x07;
@@ -897,7 +894,7 @@ static UWORD *type_3(UWORD *c,char *s,WORD index)
 	UWORD source;
 	char e_a[40];	/*	place to put effective address	*/
 	WORD op_mode;
-	char **regs;
+	const char **regs;
 	WORD dir;
 	WORD size;
 
@@ -1148,17 +1145,3 @@ static UWORD *effective_address(UWORD *a,char *s,UWORD ea,WORD index,WORD op_mod
 	return(a);
 }
 
-#ifdef MAIN
-main()
-{
-	char code[80];
-	void *p;
-
-	p = (void *)Never;
-	do {
-		p = dis(p,code);
-		prWORDf("%s\n",code);	/*	prWORD out code	*/
-	}while(p != NULL);
-}
-
-#endif

@@ -19,3 +19,4 @@ extern void init_monitor (int);
 extern void signal_monitor (monitor_signal_type,void *);
 extern int update_monitor (UL *,int,int);
 
+extern int in_monitor;

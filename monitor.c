@@ -11,6 +11,7 @@
 /* Standard Includes */
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "defs.h"
 #include "tosdefs.h"
@@ -18,10 +19,13 @@
 
 #include "monitor.h"
 
+#ifdef WATCH
+#undef WATCH
+#endif
 #define WATCH 1
 
 /* local global vars - used for various breakpoints */
-static int in_monitor=0;
+int in_monitor=0;
 
 static UL count = 0;
 static UL bkpt = 0;
@@ -54,6 +58,9 @@ extern L pc;
 static void print_help (void);
 static void set_breakpoint (command *cmd);
 static void dump_memory (command *cmd);
+static void dump_code (command *cmd);
+static void change_memory (command *cmd);
+static void set_watch (command *cmd);
 /* other */
 static command  *parse_command(char *cmd);
 static int dissassemble (int pos, int count);
@@ -102,7 +109,7 @@ void signal_monitor (monitor_signal_type reason,void *data)
 	{
 	case GEMDOS:
 	  {
-	    fprintf(stderr,"Gemdos call (%d) caused break\n",(W *) data);
+	    fprintf(stderr,"Gemdos call (%d) caused break\n",(int)(*(W *) data));
 	    in_monitor=1;
 	    break;
 	  }
@@ -374,7 +381,7 @@ static void print_help (void)
 ** Dump n bytes in a nice word format (with a newline)
 */
 
-static dump_bytes (int ptr, int count)
+static void dump_bytes (int ptr, int count)
 {
   int end;
   int i;
@@ -642,17 +649,13 @@ static int dissassemble (int pos, int count)
   char *string,*string2;
 
   string=malloc(80);
-  if (!string)
-    { 
-      free(string); 
-      return; 
-    }
-
+  if (string==NULL)
+    return(pos); 
 
   for (i=0; i<count; i++)
     {
       old_pos=pos;
-      pos = dis ((char *) pos,string); /* UGLY Kludge */
+      pos = (int)dis ((char *) pos,string); /* UGLY Kludge */
       k = pos-old_pos;
       fprintf(stdout,"%-50s",string);
 
@@ -665,13 +668,10 @@ static int dissassemble (int pos, int count)
       fprintf(stdout,"]\n");
    }
 
-  // Free memory!
+  /* Free memory! */
   free(string);
 
   return(pos);
 	
 }
-
-
-//#endif /* MONITOR */
 

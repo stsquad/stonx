@@ -456,7 +456,7 @@ void ex_breakpt (void)
 {
 	pc -= 2;
 #if MONITOR
-	update_monitor(&dreg, sr, pc);
+	update_monitor(dreg, sr, pc);
 #endif
 	EXCEPTION(T_ILLEGAL);
 }
@@ -923,7 +923,7 @@ try{
 		iw=LM_UW(MEM(pc));
 		/* moved monitor so its at start of next instruction*/
 #if MONITOR
-		if (update_monitor(&dreg, sr, pc)) 
+		if (update_monitor(dreg, sr, pc)) 
 		  {
 		    return;
 		  } else {
@@ -983,7 +983,7 @@ void execute_start (UL new_pc)
 }
 
 #if MONITOR
-void exfunc (int status)
+void exfunc (void)
 {
 	fprintf (stderr, "Instructions: %d\n", instruction_count);
 }
