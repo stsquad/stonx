@@ -1,3 +1,9 @@
+
+2001-04-01 Thomas Huth
+	* Fixed some possible buffer overflows in main.c
+	* Patched vro_cpyfm in xlib_vdi.c to also work with high and
+	  true color modes (but 24bpp does still not yet work).
+
 2001-03-02 Thomas Huth
 	* xlib_vdi.c now checks if it can load the normal Atari system fonts,
 	  if not, an alternative font will be loaded. So you now can use
