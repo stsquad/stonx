@@ -45,6 +45,16 @@
 #define UBITS(_l,_h,_x) ((((unsigned int)(_x))>>(_l))&((1<<((_h)-(_l)+1))-1))
 #define BIT(_n,_x)	(((_x)>>(_n))&1)
 
+#define DEBUG_CPU 0
+
+#if DEBUG_CPU
+extern FILE *debugfile;
+#define DBG(_args...) fprintf( debugfile, ## _args )
+#else
+#define DBG(_args...)
+#endif
+
+
 UL dummy0[100];
 L dreg[17];
 
@@ -67,6 +77,7 @@ UL shadow_pc;
 /* these should be global register variables... */
 UL vaddr;
 void *addr;
+
 /* tables for handling special addresses */
 #include "iotab1.c"
 #include "iotab2.c"
@@ -713,6 +724,9 @@ B BCD_SUB(B a, B b)
 }
 
 /* -------------------- SPECIAL EVENTS DISPATCHER --------------------------- */
+/* The process_flags function is called every instruction loop */
+/* Flags are set by many things but signal something that will affect */
+/* program flow (like exceptions) */
 #define MFP_ICOUNT_DEF 500
 static int syst_count=0;
 static int last_acia=0;
@@ -772,6 +786,17 @@ fprintf(stderr,"Timer A interrupt\n");
 	}
 #endif
 #endif /* TIMER_A */
+
+	/* Process HBL event */
+	/*	if (flags & F_HBL)
+	  {
+	    if (IPL_OK(6))
+	      {
+		EXCEPTION(T_HBL);
+		flags &= ~F_HBL;
+		return;
+	      }
+	      }*/
 	if (flags & F_BLIT)
 	{
 		Do_Blit();
@@ -827,9 +852,9 @@ fprintf(stderr,"Timer A interrupt\n");
 	}
 	else if ((flags & F_VBL) && IPL_OK(4))
 	{
-	  #if MONITOR
-	  signal_monitor(VBL,NULL);
-	  #endif
+                #if MONITOR
+	        signal_monitor(VBL,NULL);
+	        #endif
 		machine.screen_shifter();
 		EXCEPTION(T_VBL);
 		SET_IPL(5);
@@ -893,7 +918,7 @@ void Nullfunc (unsigned int iw)
 #include "gendefs.h"
 #endif
 
-/* Count of intsructions executed - useful for debuging */
+/* Count of instructions executed - useful for debuging */
 int instruction_count=0;
 UL ex_addr;
 int ex_rw;
@@ -915,22 +940,31 @@ try{
 	for (;;)
 	{
 		unsigned int iw;
+#if PROFILE
+		if (flags) process_flags(iw);
+#elif MONITOR
+		if (in_monitor==0)
+		  {
+		    if (flags) process_flags();
+		  }
+#else
+		if (flags) process_flags();
+#endif
+
+		iw=LM_UW(MEM(pc));
+		/* moved monitor so its at start of next instruction*/
 #if MONITOR
 		if (update_monitor(&dreg, sr, pc)) 
 		  {
 		    return;
 		  } else {
-
-		instruction_count++;
+		    instruction_count++;
 		  }
 #endif
-#if PROFILE
-		if (flags) process_flags(iw);
-		iw=LM_UW(MEM(pc));
-#else
-		if (flags) process_flags();
-		iw=LM_UW(MEM(pc));
-#endif
+		DBG ("Execute pc=%lx, iw=%x, count=%ld\n",
+		     pc,
+		     iw,
+		     instruction_count);
 		pc+=2;
 #if defined(GEN_FUNCTAB)
 		jumptab[iw](iw);

@@ -117,8 +117,10 @@ extern UL shadow_pc;
 #define T_LINEA		10
 #define T_LINEF		11
 #define T_VBL           28
-#define T_200Hz         69
-#define T_ACIA		70
+#define T_200Hz         69 /*MFP Timer C       */
+#define T_ACIA		70 /*MFP Keyboard/MIDI */
+#define T_FDC_HDC       71 /*MFP fdc/hdc interrupt (not implemented)*/
+#define T_HBL           72 /*MFP Horizontal blank counter*/
 #define T_RCV_FULL	76
 #define T_TIMERA	77
 #define T_TRAP_0 32
@@ -130,7 +132,7 @@ extern UL shadow_pc;
 
 #define EXCEPTION_VECTOR(_e) ADDR((_e)*4)
 
-/* flags */
+/* flags - these are set when things happen - the main execute loop polls the flags global*/
 #define F_VBL 		0x0001
 #define F_200Hz 	0x0002
 #define F_ACIA		0x0004
@@ -143,6 +145,7 @@ extern UL shadow_pc;
 #define F_PROFILE	0x0200
 #define F_TIMERA_ON	0x0400
 #define F_CONFIG	0x0800
+#define F_HBL           0x1000
 
 extern L dreg[];
 
