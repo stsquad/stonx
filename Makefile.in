@@ -88,18 +88,18 @@ DIST=$(CSRC) am.h mem.h debug.h defs.h main.h xlib_vdi.h tosdefs.h\
 	ikbd.h screen.h options.h gemdos.h \
 	etc/keysyms  etc/keysyms-alternative etc/keysyms-german \
 	docs/AUTHORS docs/DEBUGGING docs/INSTALL docs/README docs/RELEASE_NOTES \
-	docs/TOS-VERSIONS ChangeLog COPYING stonx.spec.in \
+	docs/TOS-VERSIONS ChangeLog COPYING TODO stonx.spec.in \
 	configure configure.in config.guess config.h.in Makefile.in \
 	tosfonts.c fonthdr.h fnttobdf.c data/makefonts.sh \
-	blitter.c audio.c mem.c memarray.c bios.c iotab1.c iotab2.c \
-	68000.def gen.c gendefs.m4 gendefs.h emulator.h\
-	amdefs.h genhead.c ui.c m4_to_c.sh cpu.h fill.xbm  \
+	iotab1.c iotab2.c 68000.def gendefs.m4 gendefs.h emulator.h\
+	amdefs.h genhead.c m4_to_c.sh cpu.h fill.xbm  \
 	atari/bench1.pas atari/bench1.prg atari/final.tos \
 	cartridge/cartridge.img cartridge/cartridge.s cartridge/cartridge.h \
 	cartridge/Makefile cartridge/cartridge.txt \
 	syscalls.h utils.h iofuncs.h blitter.h native.h audio.h io.h ui.h \
-	fdc.c fdc.h cookie.h svgalib_vdi.h x.h \
-	svga.h midi.c midi.h sfp.h toserror.h \
+	fdc.h cookie.h x.h midi.h sfp.h toserror.h \
+	svga.h svga.c svgalib_vdi.h svgalib_vdi.c \
+	di_dis.h di_dis.c monitor.h monitor.c \
 	mint/mint_comm.c mint/mint_stonxfs_fs.c mint/mint_stonxfs_dev.c\
 	mint/mint_interface.c mint/mint_serial.c mint/mint_misc.c \
 	mint/mint_defs.h mint/mint_comm.h mint/mint_serial.h \
