@@ -43,6 +43,11 @@
 # include "mint_serial.h"
 #endif
 
+#ifndef TOS_EINVFN
+#include "../toserror.h"
+#endif
+
+
 #if ! MINT_STONXFS && MINT_USEBYPASS
 #error MINT_USEBYPASS needs MINT_STONXFS
 #endif
