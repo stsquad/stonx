@@ -183,7 +183,7 @@ tosfonts:	tosfonts.c
 	$(SCC) $(CFLAGS) -o $@ tosfonts.c $(XLIBS)
 
 clean:
-	rm -f $(OBJ) $(MOREOBJ) $(XOBJ) $(SVGAOBJ) stonx stonvga
+	rm -f $(OBJ) $(MOREOBJ) $(XOBJ) $(MON_OBJS) $(SVGAOBJ) stonx stonvga
 	rm -f mon.out gmon.out fonts-done.stmp
 	rm -f tosfonts fnttobdf data/System?.fnt tosfonts.o fnttobdf.o\
               execute.o
