@@ -48,6 +48,11 @@
 /* some of this code is was stolen&modified from JET */
 #define TOS_NAMELEN 13
 
+/* Monitor support */
+#if MONITOR
+#include "monitor.h"
+#endif
+
 #if DEBUG_GEMDOS
 #define DBG(_args...) fprintf( stderr, ## _args )
 #else
@@ -1122,6 +1127,10 @@ void Gemdos (UL as)
     if (BIT(13,ssr) == 0) args = AREG(8);
     else args = as+2;
     n = LM_W(MEM(args));
+
+    #if MONITOR
+    signal_monitor (GEMDOS,&n);
+    #endif
     
     DBG( "Gemdos %d\n", n);
     
