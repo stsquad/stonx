@@ -57,10 +57,7 @@ static UL last_pblock;
 
 
 
-/* Dual mode: must execute all attribute functions etc. in TOS too!
-
-
- */
+/* Dual mode: must execute all attribute functions etc. in TOS too! */
 
 #define MAX_VWK 100
 #define MAX_POINTS 1000
@@ -2624,7 +2621,7 @@ int vdi_output_c(char c)
 	    V(("FIX_COLOR(WHITE=%d) = %d; ",WHITE,FIX_COLOR(WHITE)));
 #endif
 			XFillRectangle(display, xw, rgc, ax*acw, ay*ach, vdi_w - ax * acw, ach);
-			XBUF(/* TODO */);
+			/*XBUF( ...TODO... );*/
 			XSetForeground(display, rgc, FIX_COLOR(BLACK));
 #if TRACE_VDI
 	    V(("FIX_COLOR(BLACK=%d) = %d\n",BLACK,FIX_COLOR(BLACK)));
