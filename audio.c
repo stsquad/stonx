@@ -196,9 +196,10 @@ struct Snd
   
 B LOAD_B_ff8800(void) 
 { 	
-  //  fprintf(stderr,"Load $ff8800 - current selected : %d\n",YM_select);
+	/* fprintf(stderr,"Load $ff8800 - current selected : %d\n",YM_select); */
 	switch (YM_select)
-	{	case 0:  
+	{
+		case 0:  
 			return Snd.YM_ChannelA.finetune;
 		case 1:
 			return Snd.YM_ChannelA.crsetune;
@@ -236,35 +237,39 @@ B LOAD_B_ff8800(void)
 }
 
 B LOAD_B_ff8801(void)
-{	return (B) 0xff;			/* checked : always returns 0xff */
+{
+	return (B) 0xff;			/* checked : always returns 0xff */
 }
 
 B LOAD_B_ff8802(void)
-{	return (B) 0;
+{
+	return (B) 0;
 }
 
 B LOAD_B_ff8803(void)
-{	return (B) 0xff;			/* checked : always returns 0xff */
+{
+	return (B) 0xff;			/* checked : always returns 0xff */
 }
 
 void STORE_B_ff8800(B v)
 {	
-  //  fprintf(stderr,"Store $ff8800 : %d\n",v);
-  YM_select = v & 15;
+	/* fprintf(stderr,"Store $ff8800 : %d\n",v); */
+	YM_select = v & 15;
 }
 
 void STORE_B_ff8801(B v)
 {	
-  //  fprintf(stderr,"Store $ff8801 : %d\n",v);
+	/* fprintf(stderr,"Store $ff8801 : %d\n",v); */
 
-  /* should this do what 8800 does??? on a Falcon it seems to!!! */
+	/* should this do what 8800 does??? on a Falcon it seems to!!! */
 }
 
 void STORE_B_ff8802(B v)
 {	
-  //  fprintf(stderr,"Store $ff8802 : %d\n",v);
+	/* fprintf(stderr,"Store $ff8802 : %d\n",v); */
 	switch (YM_select)
-	{	case 0:  
+	{
+		case 0:  
 			Snd.YM_ChannelA.finetune=v & 0xff;
 #if (DEBUG_SND)
 			fprintf(stderr,"Channel A fine tune:%d\n",(UL) v);
@@ -348,9 +353,8 @@ void STORE_B_ff8802(B v)
 }
 
 void STORE_B_ff8803(B v)
-{	/*fprintf(stderr,"Store $ff8803 : %d\n",v);*/
-
-	
+{
+	/*fprintf(stderr,"Store $ff8803 : %d\n",v);*/
 }
 
 

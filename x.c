@@ -9,12 +9,14 @@
  * - clean up code, remove dead flags and code
  * - test on more displays
  */
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
 #include <sys/times.h>
 #include <signal.h>
 #include <time.h>
+
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -31,6 +33,7 @@
 #include "screen.h"
 #include "utils.h"
 #include "xlib_vdi.h"
+
 
 #define KB_DEBUG 0
 #define DEBUG_X 0
@@ -88,7 +91,7 @@ static Window in_which=None;
 static XVisualInfo vi;
 static int tc_cols[16];
 
-// store X11 mouse cursor position
+/* store X11 mouse cursor position */
 int    xmouse_x=-1, xmouse_y=-1;
 
 /* new stuff */
@@ -720,7 +723,7 @@ void x_process_events(void)
 
 		      XDefineCursor (display, imagewin, cursors[cursidx]);
 
-		      // save X11 mouse position
+		      /* save X11 mouse position */
 		      xmouse_x = (((XCrossingEvent *)&e)->x);
 		      xmouse_y = (((XCrossingEvent *)&e)->y);
 #if GRABMODE
@@ -930,7 +933,7 @@ void x_process_events(void)
 	  /* compensate zoom in st mid */
 	  if(old_shiftmod == 1) ty *= 2;
 	  
-	  // match X and TOS mouse 
+	  /* match X and TOS mouse */
 	  if((ikbd_inbuf == 0)&&
 	     ((xmouse_x != tx)||(xmouse_y != ty))&&
 	     (xmouse_x != -1)) {
