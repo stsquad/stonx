@@ -14,6 +14,7 @@
 #if 0
 #include <setjmp.h>
 #endif
+#include "config.h"
 #include "defs.h"
 #include "iofuncs.h"
 #include "io.h"
@@ -31,13 +32,13 @@
 #include "utils.h"
 #include "cookie.h"
 
-#define MONITOR 1
-
 #define EXCEPTION(n) exception(n, LM_UL(EXCEPTION_VECTOR(n)))
 #define NOTREACHED assert(0);
 
 #if MONITOR
 extern int in_monitor;
+extern void signal_monitor(int);
+extern int update_monitor(UL,int,int);
 #endif
 #define CHECK_TRACE() do{if (sr&SR_T) {flags &= ~F_TRACE1; flags |= F_TRACE0;}}while(0)
 #define CHECK_NOTRACE() do{if ((sr&SR_T)==0) flags &= ~(F_TRACE0|F_TRACE1);}while (0)
@@ -374,8 +375,9 @@ static INLINE void V_EX (UL addr, int rw)
 	/* Chance to update monitor 
 	** TODO: flag it so we don't do it at every exception!
 	*/
-	update_monitor(&dreg, sr, pc,1);
-
+#if MONITOR
+	signal_monitor(1);
+#endif
 
 }
 
@@ -444,7 +446,7 @@ void ex_breakpt (void)
 {
 	pc -= 2;
 #if MONITOR
-	update_monitor(&dreg, sr, pc,1);
+	update_monitor(&dreg, sr, pc);
 #endif
 	EXCEPTION(T_ILLEGAL);
 }
@@ -896,7 +898,8 @@ void Nullfunc (unsigned int iw)
 #include "gendefs.h"
 #endif
 
-int count=0;
+/* Count of intsructions executed - useful for debuging */
+int instruction_count=0;
 UL ex_addr;
 int ex_rw;
 #ifndef DECOMPILER
@@ -918,12 +921,12 @@ try{
 	{
 		unsigned int iw;
 #if MONITOR
-		if (update_monitor(&dreg, sr, pc,0)) 
+		if (update_monitor(&dreg, sr, pc)) 
 		  {
 		    return;
 		  } else {
 
-		count++;
+		instruction_count++;
 		  }
 #endif
 #if PROFILE
@@ -984,7 +987,7 @@ void execute_start (UL new_pc)
 #if MONITOR
 void exfunc (int status)
 {
-	fprintf (stderr, "Instructions: %d\n", count);
+	fprintf (stderr, "Instructions: %d\n", instruction_count);
 }
 #endif
 

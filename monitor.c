@@ -2,27 +2,32 @@
  * ============================================================
  * STonX is free software and comes with NO WARRANTY - read the file
  * COPYING for details
+ *
+ * The old monitor code has been heavily butchered due to a mixture
+ * of wierd ncurses stuff and not understanding the OPCODE generator output.
+ * The original (broken) code can be found in release prior to 6.7.3
  */
+
 #include "defs.h"
 #include "tosdefs.h"
 #include "mem.h"
-//#if MONITOR
 #include <stdio.h>
 #include <ctype.h>
-//#include <curses.h>
-//#include "dis-asm.h"
 
 #define WATCH 1
 B *smem = 0;
 W *spc	= 0;
-//extern wprintw(), printw();
-//extern WINDOW *stdscr;
-//static disassemble_info info;
 static UL off = 0x10000;
-static UL count = 0;
 static UL bkpt = 0;
 static int mode=0;
+
+/* local vars */
+
+static UL count = 0;
 int in_monitor=0;
+
+/* external vars */
+extern int instruction_count;
 
 /* disassembly routine */
 extern void* dis (char *ptr,char *string);
@@ -40,6 +45,23 @@ void init_monitor (int startflag)
     }
 }
 
+/*
+** New function to signal events to monitor
+** e.g. Exceptions, Shift-pause etc..
+**
+** At the moment it just sets the in_monitor flag for
+** when the execute loop next gets round to us!
+** 
+** TODO: Actually define some conditions so we can filter on them
+**
+*/
+
+void signal_monitor (int reason)
+{
+  fprintf (stderr,"Signal to monitor %d\n",reason);
+  in_monitor=1;
+}
+
 void kill_monitor (void)
 {
   //endwin();
@@ -49,40 +71,52 @@ void kill_monitor (void)
 ** The update monitor function is called every instruction cycle
 ** It should exit straight away unless
 **
-**   1. an exception has been reached (signalled by the exception flag)
-**   2. the execution count has reached 0
-**   3. the pc has hit a breakpoint address
-**   4. the in_monitor flag is set
+** In the monitor state (in_monitor!=0)
+**   1. the execution count has reached 0
+**   2. the pc has hit a breakpoint address
+**
+** In the running state (in_monitor==0)
+**   1. BAD: REMOVED see signal_monitor // an exception has been reached (signalled by the exception flag)
+**
+** Interesting vars:
+**     cmd - string for processing debugger commands
+**     count - count of monitor entries (used for executing n instructions)
 */
 
-int update_monitor (UL *regs, int sr, int pcoff, int exception)
+int update_monitor (UL *regs, int sr, int pcoff)
 {
   int monitor=0;
   int exit_val=0;
+  char cmd[100]; 
 	int i, j, x, c, cha=0, toppc, pos, lo1, eoi, yp, ddd=0;
 	static UW v=0x4e71;
 #if WATCH
 	static UB wv=0, *watch=MEM(0);
 #endif
 	static UL lv=0;
-	char cmd[100];
 	UL u,s;
 
-	if (!in_monitor)
+	/* Question? Would an OR test be optimised faster? */
+	if (in_monitor)
 	  {
-	    if (count-- > 0 && TRIM(pcoff) != TRIM(bkpt) && (!exception)
+	    if (count-- > 0 && TRIM(pcoff) != TRIM(bkpt)
                #if WATCH
 	       && LM_UB(watch) == wv
                #endif
-	    ) return (exit_val);
-	  } /* endif !in_monitor */ 
+	    ) 
+	      return (exit_val);
+	 }
+	else
+	  {
+	    return (exit_val);
+	  }/* endif !in_monitor */ 
 
 	
 #if WATCH
 	wv = LM_UB(watch);
 #endif
 
-	fprintf (stderr,"Entering Monitor Code\n");
+	fprintf (stderr,"Entering Monitor after %d instructions\n",instruction_count);
 
 	in_monitor=1;
 	monitor=1;
@@ -95,11 +129,20 @@ int update_monitor (UL *regs, int sr, int pcoff, int exception)
 
 	while (monitor)
 	  {
-	    fprintf(stdout,"STMON>");
+	    fprintf(stdout,"\nSTMON>");
 
 	    toppc = TRIM(toppc); off = TRIM(off); 
 	    switch (c = getchar())
 	      {
+	      case 'B':
+	      case 'b':
+		{
+		  fgets(cmd,sizeof(cmd),stdin);
+		  bkpt=strtol(cmd,NULL,16);
+		  fprintf ("Breakpoint set @ %lx\n",bkpt);
+		  monitor=0;
+		  break;
+		}
 	      case 'h':
 	      case 'H':
 	      case '?':
@@ -114,6 +157,14 @@ int update_monitor (UL *regs, int sr, int pcoff, int exception)
 		  exit_val=1;
 		  break;
 		}
+	      case 'R':
+	      case 'r':
+		{
+		  fgets(cmd,sizeof(cmd),stdin);
+		  count=strtol(cmd,NULL,10);
+		  monitor=0;
+		  break;
+		}
 	      case 'S':
 	      case 's':
 		{
@@ -124,7 +175,6 @@ int update_monitor (UL *regs, int sr, int pcoff, int exception)
 	      case 'g':
 	      case 'G':
 		{
-		  count=100;
 		  monitor=0;
 		  in_monitor=0;
 		  break;
@@ -145,10 +195,10 @@ int update_monitor (UL *regs, int sr, int pcoff, int exception)
 
 static void print_help (void)
 {
- 
-  fprintf (stdout,"s - step (one instruction)\n");
-  fprintf (stdout,"g - go (continue running)\n");
-  fprintf (stdout,"q - quit (leave STonX)\n");
+  fprintf (stdout,"r n - run n instructions\n");
+  fprintf (stdout,"s   - step (one instruction)\n");
+  fprintf (stdout,"g   - go (continue running)\n");
+  fprintf (stdout,"q   - quit (leave STonX)\n");
 }
 
 /*
@@ -170,15 +220,13 @@ static dump_bytes (int ptr, int count)
 ** Dump Registers D0-D7/A0-A7
 **
 ** TODO:
-**  1. Proper decode of the SSR
+**  1. Proper decode of the SSR (In Hex?!)
 */
 
 static void dump_registers (UL *regs, int sr)
 {
   int i,j;
   UL u,s;
-
-  fprintf (stdout,"Dumping Registers...\n");
 
 	for (i=0; i<8; i=i+4)
 	{
@@ -196,7 +244,8 @@ static void dump_registers (UL *regs, int sr)
 	  fprintf (stdout,"A%d: %04x %04x ", i+3, regs[i+11]>>16, regs[i+11]&0xffff);
 	  fprintf (stdout,"\n");
 	}
-	if (sr & 0x2000)
+#if 0 /* broken?*/
+        if (sr & 0x2000)
 	{
 	  fprintf (stdout, "Supervisor Mode:");
 		u = regs[16]; s = regs[15];
@@ -206,21 +255,22 @@ static void dump_registers (UL *regs, int sr)
 	  fprintf (stdout,"User Mode:");
 		u = regs[15]; s = regs[16];
 	}
-	fprintf (stdout, "%04x:", u);
+	#endif
+	fprintf (stdout, "SR:%x", sr);
+#if 0 /* broken? */
 	if (u&0x01) fprintf (stdout,"C");
 	if (u&0x02) fprintf (stdout,"O");
 	if (u&0x04) fprintf (stdout,"Z");
 	if (u&0x08) fprintf (stdout,"N");
 	if (u&0x10) fprintf (stdout,"X");
-
+#endif
 	fprintf (stdout,"\n");
 }
 
 /*
-** AJB: I don't know where this came from but for now it thunks to
-** the new 68k dissassembly routine.. not neat but should work. As
-** Jims 68k dissassembly thinks its on a 68k I need to copy from
-** the 68k core to a buffer scanned by dis();
+** The Original dissassembly used some table generated by the OPCODE routines
+** This now uses a patched version of Jim Patchells dissassembler (patched to
+** read memory using STonXs L_ macros) 
 **
 ** TODO:
 */

@@ -22,6 +22,7 @@
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
 
+#include "config.h"
 #include "defs.h"
 #include "tosdefs.h"
 #include "debug.h"
@@ -145,6 +146,10 @@ extern int x_process_arg(char *optname, int argc, char *argv[]);
 extern void x_show_arghelp(FILE *f);
 extern void x_process_signal(int signal);
 extern void x_process_events(void);
+
+#if MONITOR
+extern void signal_monitor (int);
+#endif
 
 static void show_screen(void);
 static void x_fullscreen(int *x, int *y);
@@ -740,8 +745,12 @@ void x_process_events(void)
 		  if(((XKeyEvent *)&e)->state & ShiftMask) {
 #if SHIFT_PAUSE_EXITS
 		      fprintf(stderr,"Shift-Pause detected\n");
+		      #if MONITOR
+		      signal_monitor(NULL);
+		      #else
 		      stonx_exit();
 		      exit(0);
+                      #endif
 #else /* SHIFT_PAUSE_EXITS */
 		  flags |= F_CONFIG;
 #endif /* SHIFT_PAUSE_EXITS */
