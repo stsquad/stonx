@@ -63,15 +63,16 @@ This defangs the compiler options to provide an executable that gdb can actually
 understand. Again you probably don't want this unless you want to debug STonX behaviour with
 gdb.
 
+
 ADDITIONAL CONFIGURATION OPTIONS
 ================================
 
 After generating the Makefile, look at the file 'options.h' and 'config.h'
 and see if there is anything you want to change. The only option that you might
-need to change is SMALL (check if this is defined in the `config.h' as well),
-which should be set to 1 if your system has less than 16MB physical memory or
-if linking fails otherwise (it will result in an emulator which emulates 4MB
-RAM instead of 14MB, and takes up approximately 9MB swap space instead of 17MB).
+need to change is SMALL (defined in the file 'config.h'), which should be
+set to 1 if your system has less than 16MB physical memory or if linking
+fails otherwise (it will result in an emulator which emulates 4MB RAM instead
+of 14MB, and takes up approximately 9MB swap space instead of 17MB).
 
 
 COMPILING
@@ -113,16 +114,17 @@ INSTALLING
 At the moment, there are three possibilities to install STonX:
 1) Copy the executable to a place you like and run it with the command line
    options "-tos", "-cartridge" and "-kmap" to tell STonX where to find
-   the TOS ROM image, the cartridge image and the Keysyms file.
-2) You can copy the Keysyms file to your home directory and rename it to
-   .stonx.Keysyms and then create a config file for STonX, rename it to
+   the TOS ROM image, the cartridge.img and the keysyms file.
+2) You can copy the keysyms file to your home directory and rename it to
+   .stonx.keysyms and then create a config file for STonX, rename it to
    ~/.stonxrc and write something like:
 	tos /path/to/tos.img
 	cartridge /path/to/cartridge.img
    in it.
-3) Make a system-wide installation by typing "make install" - but you need to
-   be root for this. This will create the files /etc/stonxrc and
-   /etc/stonx.Keysyms that you probably need to adapt to your system.
+3) Make a system-wide installation by typing "make install" - but you might
+   need to be root for this. This will create the files /etc/stonx/stonxrc and
+   /etc/stonx/stonx.keysyms (or in the folder you specified when running the
+   configure script). You probably need to adapt these files to your system.
 
 The system fonts should be installed in a place where the X server can find
 them. Examine your default font path with the `xset' command:

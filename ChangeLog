@@ -1,3 +1,7 @@
+2003-01-31 Thomas Huth
+	* Improved the Makefile.in ("make install" should work better now).
+	* Updated the documentation a little bit.
+
 2002-12-27 Thomas Huth
 	* Fixed shared-memory code in x.c to also work on my system (Linux/PPC)
 
@@ -207,4 +211,87 @@
 	* All changes made to my version of STonX
 	  (based on STonX-0.6.7-epsilon).
 
+
+
+**************** Old change log: ****************
+
+
+Version 0.6 (Dec 21, 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Emulation code has been almost completely rewritten, resulting in 
+  1) 20-80% speed increase, 65% on my Linux PC and 80% on our Alphas
+  2) Less memory and more time needed to compile cpu.c 
+  3) More easily maintainable code
+- experimental implementation of the -size option
+- added Griff's patches to main.c to read options from a $HOME/.stonxrc file
+
+Version 0.5 (Nov 30 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~
+- Integrated sound, serial and parallel port support
+- Fixed a few bugs, e.g. the one that caused the Alpha console crash
+- Added colormap sharing (#define NEWCOLOR 1 in screen.c)
+- Added a Unix filesystem interface (option -fs, file gemdos.c)
+- More assembly support for x86
+- mkfonts.sh is now a /bin/sh script
+- TOS 1.X support where X=0,2,4. Executing programs over the Unix filesystem
+  interface may not work with TOS <1.4 (sorry)
+- Timer C is now optionally 200Hz
+
+Version 0.4 Beta (Jul 25 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- first public release
+- Integrated Griff's blitter emulator
+- The VDI driver redraws at expose events now
+- The VDI driver works with monochrome displays now, and -DMONO has been 
+  eliminated
+- Little-endian fixes for the VDI driver and fnttobdf
+- Linux port and assembly support
+- Emulation is a bit faster now for some instructions
+- Condition codes N,Z are now evaluated lazily (this makes STonX incompatible
+  with the real 68000 in some rare cases, but I haven't seen code that uses
+  this)
+
+Version 0.3 Alpha (Apr 15 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Fixed 12 bit FAT assumption and Media-Change bug, large diskfiles work now
+- Improved the VDI driver, now it looks almost exactly like TOS VDI
+- Wrote programs to help convert GEM Bitmap Fonts to BDF format
+
+Version 0.2 Alpha (Apr 13 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Fixed invalid initialisation of sigset_t variable in hw.c
+- Fixed problem with multiple keycodes mapped to the same Keysym.
+  This prevented e.g. a keyboard reset with the usual combination if both the
+  normal and the Keypad Del key were mapped to the "Delete" keysym.
+- Fixed description of 8th change above. :-) (on -> off)
+- Changed the default frequencies to something more reasonable
+- Implemented (simple) VDI input functions
+- It is now possible to switch between the `old style' window and the VDI
+  window at runtime. This feature may disappear in the future.
+- X events are now processed at every VBL, not at every screen update
+- The `old style' window is not updated if the X pointer is in the VDI
+  window
+- Added -DSMALL for people with less memory and/or patience
+- Added a chmod +w Makefile to Makefile.in (make depend rule)
+- Changed stricmp() to strncasecmp()
+
+First version with a version number - Version 0.1 Alpha (Apr 11 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Added -refresh option
+- Wrote an `Autoconf' script
+- Removed the Xlib calls from the signal handler
+- Use sigaction() instead of signal() (Thanks to Des Herriott for the hint!)
+- Added global register variable declarations for SGIs (untested)
+- Fixed bug in colormap handling which bloated up the Xserver if colormap
+  changed frequently
+- Fixed bug which caused bus errors at naughty accesses to $ff8206
+  (Grav2 runs now! ;-))
+- The keyboard auto repeat is now only turned off if the X mouse pointer is
+  inside the emulator window
+- Merged some patches for little-endian machines and little-endian frame buffers
+  (untested)
+
+
+In the beginning there were absurd plans, long sleepless nights, and incredible
+boredom...
 

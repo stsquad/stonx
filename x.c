@@ -1601,12 +1601,13 @@ void x_init_keys(void)
 	if ( home )
 	{
 	    strncpy( kdefsfile, home , 512-16);
-	    strcat( kdefsfile, "/.stonx.Keysyms" );
+	    strcat( kdefsfile, "/.stonx.keysyms" );
 	    f = fopen( kdefsfile, "r" );
 	}
 	if ( !f )
 	{
-	    strcpy( kdefsfile, "/etc/stonx.Keysyms" );
+	    strcpy( kdefsfile, STONXETC);
+	    strcat( kdefsfile, "/keysyms" );
 	    f = fopen( kdefsfile, "r" );
 	}
     }

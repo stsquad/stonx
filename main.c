@@ -374,12 +374,12 @@ void process_stonxrc(void)
 	    if ((rc=fopen(stonxrc,"r")) == NULL)
 	    {
 		if ( machine.name ) {
-		    strcat(stonxrc,"/etc/"STONXRC".");
+		    strcpy(stonxrc, STONXETC"/"STONXRC".");
 		    strcat(stonxrc,machine.name);
 		    rc = fopen(stonxrc,"r");
 		}
 		if ( !rc ) {
-		    strcpy(stonxrc,"/etc/"STONXRC);
+		    strcpy(stonxrc, STONXETC"/"STONXRC);
 		    rc = fopen(stonxrc,"r");
 		}
 	    }
@@ -399,11 +399,11 @@ void process_stonxrc(void)
 		    continue;
 		}
 	    c++;
-	}
-	fclose(rc);
-	fprintf (stderr, "Using configuration file:%s\n", stonxrc);
-	process_args (c, args,1);
-	for (i=1023 ;i>0;i--) free(args[i]);
+	    }
+	    fclose(rc);
+	    fprintf (stderr, "Using configuration file:%s\n", stonxrc);
+	    process_args (c, args,1);
+	    for (i=1023 ;i>0;i--) free(args[i]);
 	}
     }
 }

@@ -1001,7 +1001,5 @@ void init_cpu (void)
 	SM_UL(ADDR(4),LM_UL(MEM(tosstart+4)));
 	SP = LM_UL(ADDR(0));
 	pc = LM_UL(ADDR(4));
-	fprintf(stderr,"Longwords at 0, 4 initialized to %0lx,%0lx\n",
-		(long)SP,(long)pc);
 }
 #endif
