@@ -287,7 +287,7 @@ static UWORD *type_29(UWORD *c,char *s,WORD index)
 	WORD displacement;
 	UWORD direction;
 
-	adr = LM_UL(MEM(c));
+	adr = c;
 	data_reg = (LM_UW(MEM(c)) & 0x0e00) >> 9;
 	adr_reg = LM_UW(MEM(c)) & 0x07;
 	direction = LM_UW(MEM(c)) & 0x080;
