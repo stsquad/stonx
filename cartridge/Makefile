@@ -28,16 +28,13 @@ OBJDUMP = m68k-atari-mint-objdump
 
 all: cartridge.img
 
-cartridge.img: cartridge.o 
+cartridge.img: cartridge.s
+	$(AS) $(ASFLAGS) $? -o cartridge.o
 	${LD} ${LDFLAGS} -o $@ cartridge.o
 
 # Does just work without -oformat binary of Linker!!!
 show: cartridge.img
 	$(OBJDUMP) --target=binary --architecture=m68k  --adjust-vma=0xfa0000 -D cartridge.img
 
-# Assembling the assembler code
-cartridge.o: cartridge.s
-	$(AS) $(ASFLAGS) $? -o $@
-        
 clean:
 	rm -f *.o *~ cartridge.img core
