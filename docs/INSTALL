@@ -123,7 +123,7 @@ At the moment, there are three possibilities to install STonX:
    in it.
 3) Make a system-wide installation by typing "make install" - but you might
    need to be root for this. This will create the files /etc/stonx/stonxrc and
-   /etc/stonx/stonx.keysyms (or in the folder you specified when running the
+   /etc/stonx/keysyms (or in the folder you specified when running the
    configure script). You probably need to adapt these files to your system.
 
 The system fonts should be installed in a place where the X server can find
