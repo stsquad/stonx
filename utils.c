@@ -9,17 +9,25 @@
 #include <stdarg.h>
 extern int verbose;
 
+
 void load_file (char *file, B *d)
 {
-	FILE *f = fopen(file, "rb");
+	FILE *f;
+	long length;
+
+	f = fopen(file, "rb");
 	if (f == NULL)
 	{
 		fprintf (stderr, "Error: File `%s' not found!\n", file);
 		exit(3);
 	}
 	verbose && fprintf (stderr, "Loading `%s'...\n", file);
-	fread(d,0x7fffffff,1,f); /* FIXME */
+	fseek(f, 0, SEEK_END);
+	length=ftell(f);
+	fseek(f, 0, SEEK_SET);
+	fread(d, 1, length, f);
 }
+
 
 void error (char *fmt, ...)
 {
