@@ -856,7 +856,7 @@ static void set_clipping(VWK * v)
 static void done_raster(VWK * v, int oldmode)
 {
 	XSetFunction(display, v->gc, oldmode);
-	set_clipping(v);
+	/*set_clipping(v);*/  /* 2001-03-15:  Clipping stays enabled while doing a raster copy */
 }
 
 static void set_fontparms(int h)
@@ -2219,6 +2219,40 @@ static int vrt_cpyfm(void)
 
 /********************************************************************/
 
+/* findpixelindex: Searches for a CLUT entry for the pixel at address pptr */
+static int findpixelindex(void *pptr)
+{
+ long pixelcol;
+ int i;
+ switch(depth)
+  {
+   case 8:   pixelcol = *(UB *)pptr; break;
+   case 15:
+   case 16:  pixelcol = *(UW *)pptr; break;
+   case 24:  return 0;
+   /* I disabled the 24bpp mode for the moment since it does not yet work on */
+   /* my machine and it is terribly slow, too! - Thothy */
+/*
+      pixelcol = 0;
+      pixelcol = ((*(UB *)pptr)) | ((*((UB *)pptr+1))<<8) | ((*((UB *)pptr+2))<<16);
+      break;
+*/
+   case 32:  pixelcol = *(UL *)pptr; break;
+   default:  return 0;
+  }
+ /*fprintf(stderr, "findpixelindex color: %lx\n", pixelcol);*/
+ for(i=0; i<MAX_VDI_COLS; i++)
+  {
+   if( FIX_COLOR(i)==pixelcol )
+    {
+     /*fprintf(stderr, "findpixelindex index: %lx\n", i);*/
+     return(i);
+    }
+  }
+ return 0;
+}
+
+
 static int init_oraster(VWK * v, int mode)
 {
 	XGCValues gv;
@@ -2236,13 +2270,12 @@ static int init_oraster(VWK * v, int mode)
 #if TRACE_VDI
 	    V(("FIX_COLOR(WHITE=%d) = %d\n",WHITE,FIX_COLOR(WHITE)));
 #endif
-	gv.clip_mask = None;
-	XChangeGC(display, v->gc, GCClipMask | GCFunction | GCFillStyle | GCForeground | GCBackground, &gv);
+	/*gv.clip_mask = None;*/  /* 2001-03-15 (Thothy): Clipping should stay enabled! */
+	XChangeGC(display, v->gc, /*GCClipMask |*/ GCFunction | GCFillStyle | GCForeground | GCBackground, &gv);
 	return oldmode;
 }
 
 /* copy raster from screen to MFDB d in device dependent format */
-/* doesn't work without -private at the moment FIXME */
 static void copy_screen_to_st_dd(GC gc, int x, int y, int w, int h, UL s,
 	UL d, int dx, int dy)
 {
@@ -2262,15 +2295,14 @@ static void copy_screen_to_st_dd(GC gc, int x, int y, int w, int h, UL s,
 		xi->bytes_per_line = LM_W(MEM(d + 8)) * 2;
 		xi->data = (char *) MEM(da);
 		XGetSubImage(display, tmpx, x, y, w, h,	1, XYPixmap, xi, dx, dy);
-	} else
-		/* assume depth == 8 FIXME */
+	}
+	else /* Not a monochrome raster: */
 	{
 		int words = LM_W(MEM(d + 8));
 		int height = LM_W(MEM(d + 6));
 		int bpp = words * 2 * height;
-		UB *dp = (UB *)MEM(da)
-			+ words * 2 * dy + ((dx + 15) & -16) / 8;	/*FIXME */
-		UB *sp = (UB *)&(subimage->data[dx + dy * vdi_w]);
+		UB *dp = (UB *)MEM(da) + words*2 * dy + ((dx + 15) & -16) / 8;
+		UB *sp = (UB *)&(subimage->data[(dx + dy * vdi_w) * depth/8]);
 		int planes = LM_W(MEM(d + 12));
 		int i, j, k, l;
 
@@ -2286,25 +2318,49 @@ static void copy_screen_to_st_dd(GC gc, int x, int y, int w, int h, UL s,
 #endif
 		V(("  copy_screen_to_dd (8/4, [%d,%d,%d,%d]->[%d,%d] MFDB[%d,%d,%d]\n",
 			x, y, w, h, dx, dy, planes, words, height));
-		for (i = 0; i < h; i++)
-		{
+		/* Now copy the screen data into the MFDB: */
+		if( priv_cmap && depth==8 )   /* With a private colormap, in 8 bpp mode, use fast method */
+		 for (i = 0; i < h; i++)
+		  {
 			for (j = 0; j < words * 2; j++)
-			{
+			 {
 				for (l = 0; l < planes; l++)
-				{
+				 {
 					UB p = 0;
 
 					for (k = 0; k < 8; k++)
-					{
-						p |= ((sp[j * 8 + k + i * vdi_w] >> l) & 1) << (7 - k);
-					}
+					 {
+					   p |= ((sp[j * 8 + k + i * vdi_w] >> l) & 1) << (7 - k);
+					 }
 					dp[bpp * l + j + i * words * 2] = p;
-				}
-			}
-		}
+				 }
+			 }
+		  }
+		else /* Without private colormap or in true color, we have to use this ugly method: */
+		 for (i = 0; i < h; i++)
+		  {
+			for (j = 0; j < words * 2; j++)
+			 {
+				for (l = 0; l < planes; l++)
+				 {
+					UB p = 0;
+
+					for (k = 0; k < 8; k++)
+					 {
+					   /* Since the destination MFDB only offers 2 or 4 bits per pixel, we have to find */
+					   /* the color index of the actual pixel... :-( */
+					   /* This is very slow, perhaps someone can write a faster version. */
+					   p |= ((findpixelindex(&sp[(j * 8 + k + i * vdi_w)*depth/8]) >> l) & 1) << (7 - k);
+					 }
+					dp[bpp * l + j + i * words * 2] = p;
+				 }
+			 }
+		  }
+
 	}
 }
 
+/* copy raster from MFDB d in device dependent format to the screen */
 static void copy_st_dd_to_screen(GC gc, int x, int y, int w, int h, UL s,
 	int dx, int dy)
 {
@@ -2320,11 +2376,12 @@ static void copy_st_dd_to_screen(GC gc, int x, int y, int w, int h, UL s,
 		xi->data = (char *) MEM(sa);
 		XBUF(XPutImage(display, xbuffer, gc, xi, x, y, dx, dy, w, h);)
 		XPutImage(display, xw, gc, xi, x, y, dx, dy, w, h);
-	} else
+	}
+	else /* A color raster: */
 	{
-		UB *sp = (UB *)MEM(sa)
-			+ LM_W(MEM(s + 8)) * 2 * y + ((x + 15) & -16) / 8;		/* FIXME */
-		UB *dp = (UB *)&(subimage->data[dx + dy * vdi_w]);
+		UB *sp = (UB *)MEM(sa) + LM_W(MEM(s + 8)) * 2 * y + ((x + 15) & -16) / 8;	/* Source pointer */
+		UB *dp = (UB *)&(subimage->data[(dx + dy * vdi_w) * depth/8 ]);			/* Dest. pointer */
+		void *dptr;
 		int planes = LM_W(MEM(s + 12));
 		int words = LM_W(MEM(s + 8));
 		int height = LM_W(MEM(s + 6));
@@ -2333,22 +2390,57 @@ static void copy_st_dd_to_screen(GC gc, int x, int y, int w, int h, UL s,
 
 		V(("  copy_dd_to_screen (8/%d, [%d,%d,%d,%d]->[%d,%d] MFDB[%d,%d,%d]\n", LM_W(MEM(s + 12)),
 			x, y, w, h, dx, dy, planes, words, height));
-		for (i = 0; i < h; i++)
-		{
+		/* Now copy the MFDB data to the screen: */
+		if( priv_cmap && depth==8 )   /* With a private colormap, in 8 bpp mode, use fast method */
+		 for (i = 0; i < h; i++)
+		  {
 			for (j = 0; j < words * 2; j++)
-			{
+			 {
 				for (k = 0; k < 8; k++)
-				{
+				 {
 					UB p = 0;
 
 					for (l = 0; l < planes; l++)
-					{
+					 {
 						p |= ((sp[i * 2 * words + j + l * bpp] >> (7 - k)) & 1) << l;
-					}
+					 }
 					dp[j * 8 + i * vdi_w + k] = p;
-				}
-			}
-		}
+				 }
+			 }
+		  }
+		else  /* No private colormap or in true color... */
+		 for (i = 0; i < h; i++)
+		  {
+			for (j = 0; j < words * 2; j++)
+			 {
+				for (k = 0; k < 8; k++)
+				 {
+					UB p = 0;
+					for (l = 0; l < planes; l++)
+					 {
+					   p |= ((sp[i * 2 * words + j + l * bpp] >> (7 - k)) & 1) << l;
+					 }
+					dptr = &dp[(j * 8 + i * vdi_w + k) * depth/8];
+					switch( depth )
+					 {
+					   case 8:  *(UB *)dptr = FIX_COLOR(p); break;
+					   case 15:
+					   case 16: *(UW *)dptr = FIX_COLOR(p); break;
+					   case 24:
+					   /* I disabled the 24bpp mode for the moment since it does not yet work on */
+					   /* my machine and it is terribly slow, too! - Thothy */
+					   /*
+					      *(UB *)dptr = FIX_COLOR(p);
+					      *((UB *)dptr + 1) = FIX_COLOR(p)>>8;
+					      *((UB *)dptr + 2) = FIX_COLOR(p)>>16;
+					   */
+					      break;
+					   case 32: *(UL *)dptr = FIX_COLOR(p); break;
+					 }
+				 }
+			 }
+		  }
+
 		XBUF(XPutImage(display, xbuffer, gc, subimage, dx, dy, dx, dy, w, h);)
 		XPutImage(display, xw, gc, subimage, dx, dy, dx, dy, w, h);
 	}
