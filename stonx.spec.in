@@ -1,0 +1,58 @@
+%define name STonX
+%define version @version@
+%define release 1mdk
+
+Summary: An Atari ST emualtor for X-Windows
+Name: %{name}
+Version: %{version}
+Release: %{release}
+Source0: %{name}-%{version}.tar.gz
+URL: stonx.sf.net
+Group: Emulators
+Copyright: GPL
+BuildRoot: %{_tmppath}/%{name}-buildroot
+Prefix: %{_prefix}
+
+%description
+STonX is an Atari ST emulator for X-Windows. It runs most "clean" GEM programs as well
+as a few lower level things. It also has an X-VDI option which makes the GEM VDI calls
+via X for super-charged GEM apps.
+
+Before you run STonX you will need to obtain a copy of the TOS ROM image of an ST. You
+can do this by using a utility of your ST to copy it or by downloading one from any number
+of atari emulation sites.
+
+%prep
+%setup
+
+%build
+./configure --enable-svga
+make
+
+%install
+[ -d $RPM_BUILD_ROOT ] && rm -rf $RPM_BUILD_ROOT;
+# Create a fake root fs to install to (move to makefile?)
+mkdir -p $RPM_BUILD_ROOT%{prefix}/bin
+#mkdir -p $RPM_BUILD_ROOT%{prefix}/share/stonx
+#mkdir -p $RPM_BUILD_ROOT%{sysconfdir}
+
+make -e prefix=$RPM_BUILD_ROOT%{prefix} sysconfdir=$RPM_BUILD_ROOT%{sysconfdir} install
+
+%clean
+make clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+%doc docs/AUTHORS docs/DEBUGGING docs/INSTALL docs/PROGRAMS docs/README docs/RELEASE_NOTES docs/TOS-VERSIONS
+%{prefix}/bin/*
+#%{prefix}/share/stonx/*
+#%{sysconfdir}/*
+
+
+%changelog
+* Mon Jul 16 2001 alex <alex@bennee.com> VERSION-1mdk
+- 
+
+
+# end of file
