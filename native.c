@@ -180,7 +180,7 @@ int disk_rw(char *as)
 	dev = LM_UW(as + 10);
 	if (recno == 0xffff)
 		recno = LM_UL(as+12);
-#if 1
+#if 0
 	fprintf(stderr,"Rwabs(%d,$%lx,Cnt:%d,Rec:%ld,%d), %x, %d:\n ", rwflag, (long)buf, count, recno, dev, drive_bits, boot_dev);
 #endif
 	if (dev < 2 || dev >= MAXDRIVES || !(drive_bits & (1 << dev)) || drive_fd[dev] < 0)
