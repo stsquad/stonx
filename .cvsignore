@@ -23,3 +23,5 @@ gentabs.c
 stonx
 stonx.spec
 version.h
+fnttobdf
+tosfonts
