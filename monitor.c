@@ -20,18 +20,20 @@
 
 #define WATCH 1
 
-/* local vars */
+/* local global vars - used for various breakpoints */
+static int in_monitor=0;
 
 static UL count = 0;
-int in_monitor=0;
-static UL off = 0x10000;
 static UL bkpt = 0;
-static int mode=0;
+
+static UL watch = 0;
+static UW watch_val = 0;
+
 static monitor_signal_type signal_break=BREAK;
 
 
 /* For parsing cmd lines */
-#define EQ(_x,_y) (strcasecmp(_x,_y)==0)
+#define EQ(_x,_y) (strncasecmp(_x,_y,strlen(_y))==0)
 
 #define NUMCMDS 12
 
@@ -120,9 +122,6 @@ int update_monitor (UL *regs, int sr, int pcoff)
 
 	int i, j, x, c, cha=0, toppc, pos, lo1, eoi, yp, ddd=0;
 	static UW v=0x4e71;
-#if WATCH
-	static UB wv=0, *watch=MEM(0);
-#endif
 	static UL lv=0;
 	UL u,s;
 
@@ -135,38 +134,28 @@ int update_monitor (UL *regs, int sr, int pcoff)
 	else if (watch || bkpt)
 	  {
 	    if (TRIM(pcoff) != TRIM(bkpt) &&
-		LM_UW(watch) != wv ) return (exit_val);
+		LM_UW(MEM(watch)) == watch_val ) return (exit_val);
 	  }    
 	else
 	  {
 	    return (exit_val);
 	  }/* endif !in_monitor */ 
 
-	
-#if WATCH
-	wv = LM_UB(watch);
-#endif
 
 	fprintf (stderr,"Entering Monitor after %d instructions\n",instruction_count);
 
 	in_monitor=1;
 	monitor=1;
-	toppc = pcoff;
-	count = yp = 0;
-
-	pos = toppc;
+	count = 0;
 	dump_registers(regs,sr);
-	dissassemble (pos,10);
+	dissassemble (pcoff,10);
 
 	while (monitor)
 	  {
 	    fprintf(stdout,"\nSTMON>");
 
-	    toppc = TRIM(toppc); off = TRIM(off); 
-
 	    fgets(cmd,sizeof(cmd),stdin);
 	    cmdline = parse_command (cmd);
-	    fprintf (stderr,"We have %d args\n",cmdline->args);
 
 	    switch (*(cmdline->cmdlist[0]))
 	      {
@@ -224,6 +213,12 @@ int update_monitor (UL *regs, int sr, int pcoff)
 		  in_monitor=0;
 		  break;
 		}
+	      case 'w':
+	      case 'W':
+		{
+		  set_watch(cmdline);
+		  break;
+		}
 
 	      default:
 		break;
@@ -273,9 +268,13 @@ command  *parse_command(char *cmd)
 
 static void print_help (void)
 {
+  fprintf (stdout,"b <hex address> - break when pc=address\n");
+  fprintf (stdout,"b <vbl|gemdos|exception> - break on condition\n");
+  fprintf (stdout,"bc  - clear conditional breaks\n");
   fprintf (stdout,"r n - run n instructions\n");
   fprintf (stdout,"s   - step (one instruction)\n");
   fprintf (stdout,"g   - go (continue running)\n");
+  fprintf (stdout,"w <address> - break if address contents change\n");
   fprintf (stdout,"q   - quit (leave STonX)\n");
 }
 
@@ -366,6 +365,10 @@ static void dump_memory (command *cmd)
 ** Format STMON> b <address | type>
 **
 ** Scan for an address or type (exception/gemdos/interupt?)
+**
+** Format STMON> bc
+**
+** Clear all signal break points
 */
 
 static void set_breakpoint (command *cmd)
@@ -373,7 +376,14 @@ static void set_breakpoint (command *cmd)
 
   if (cmd->args<2)
     {
-      fprintf (stderr,"Need at least an address or type\n");
+      if (EQ(cmd->cmdlist[0],"BC"))
+	{
+	  /*bkpt=0;*/
+	  signal_break = BREAK;
+	} else {
+	  fprintf (stderr,"Need at least an address or type\n");
+	  fprintf (stderr,"Current pc bkpt is %x, signal mask %x\n",bkpt,signal_break);
+	}
     }
   else
     {
@@ -394,6 +404,39 @@ static void set_breakpoint (command *cmd)
 	}
       in_monitor=1;
     }
+}
+
+/*
+** set watch
+*/
+
+static void set_watch (command *cmd)
+{
+  if (cmd->args<2)
+    {
+      if (EQ(cmd->cmdlist[0],"WC"))
+	{
+	  watch=0;
+	} else {
+	  fprintf (stderr,"Need at least an address or register\n");
+	  fprintf (stderr,"Current watch address is %x, value %x\n",watch,watch_val);
+	}
+    }
+  else
+    {
+      if (*cmd->cmdlist[1]=='@')
+	{
+	  /* eval register */
+	}
+      else
+	{
+	  watch = strtol (cmd->cmdlist[1],NULL,16);
+	  watch_val = LM_UW(MEM(watch));
+	  fprintf (stderr, "Watch set at %x, value currently %x\n", watch,watch_val);
+	}
+      in_monitor=1;
+    }
+
 }
 
 /*
