@@ -690,7 +690,7 @@ static UWORD *type_13(UWORD *c,char *s,WORD index)
 	++c;	/*	point to immeadieate data	*/
 	if(size == 2)	/*	long operation	*/
 	{
-		++c;	/*	point to immeadieate data	*/
+	  /*++c;*/	/*already is?	point to immeadieate data	*/
 		il_data = LM_UL(MEM(c));
 		++c;
 	}
@@ -1016,6 +1016,9 @@ static UWORD *effective_address(UWORD *a,char *s,UWORD ea,WORD index,WORD op_mod
 
 	mode = (ea & 0x38) >> 3;
 	reg = ea & 0x7;
+
+	/* debug fprintf (stderr,"mode %x and regs %x\n",mode,reg);*/
+
 	switch(mode)
 	{
 		case 0:
@@ -1072,7 +1075,7 @@ static UWORD *effective_address(UWORD *a,char *s,UWORD ea,WORD index,WORD op_mod
 					sprintf(s,"$%lx.S",(long)short_adr);
 					break;
 				case 1:		/*	absolute long	*/
-					++a;
+				        ++a;
 					a1 = LM_UW(MEM(a));
 					++a;
 					a2 = LM_UW(MEM(a));
@@ -1083,7 +1086,7 @@ static UWORD *effective_address(UWORD *a,char *s,UWORD ea,WORD index,WORD op_mod
 					++a;
 					displacement = LM_UW(MEM(a));
 					a1 = (long)a + (long)displacement;
-					sprintf(s,"$lx(PC)",a1);
+					sprintf(s,"%lx(PC)",a1);
 					break;
 				case 3:
 					++a;
@@ -1134,6 +1137,11 @@ static UWORD *effective_address(UWORD *a,char *s,UWORD ea,WORD index,WORD op_mod
 							sprintf(s,"#$%x.B",displacement);
 					}
 					break;
+			default:
+			  {
+			    fprintf(stderr,"Overun decode!\n");
+			    break;
+			  }
 			}	/*	end of switch reg	*/
 			break;
 	}	/*	end of switch mode	*/
