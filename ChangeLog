@@ -1,3 +1,8 @@
+2003-09-20 Thomas Huth, STonX-0.6.7.5
+	* Bugfixes for ABCD and SBCD opcodes.
+	* STonX now quits and no longer hangs when a program stops the CPU
+	  with the STOP #$2700 instruction.
+
 2003-05-11 Thomas Huth
 	* The pexec code in the cartridge.img now uses mode=6 instead of mode=4
 	  if possible. With mode=4 the memory of a started program is lost
@@ -35,7 +40,7 @@
 	* Fixed uninitialised pointer is FS array causing crash when setting up
 	  multiple floppy disk drives.
 
-2001-07-21 Alex Bennee, STonX-6.7.4
+2001-07-21 Alex Bennee, STonX-0.6.7.4
 	* Updated tweaks and fixes to configure/Makefile and new rpm building .spec
 
 2001-07-16 Alex Bennee

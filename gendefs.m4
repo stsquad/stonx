@@ -728,6 +728,13 @@ else
 {
 	sr = $1;
 	/* FIXME */
+
+	if ((sr & 0x0700) == 0x0700)
+	{
+		/* CPU has been halted, so exit STonX now! */
+		stonx_exit();
+		exit(0);
+	}
 }
 THREAD
 ')
