@@ -35,6 +35,7 @@ extern unsigned long pixel_value_by_index[COLS];
 #ifndef TRACE_VDI
 #define TRACE_VDI 0
 #endif
+
 #define UPDATE_PHYS 0
 #define DUAL_MODE 1
 #define CALL_ROM_VDI !(UPDATE_PHYS || DUAL_MODE)
@@ -126,7 +127,6 @@ static int vdi_maptab16[] = { 0, 15, 1, 2, 4, 6, 3, 5, 7, 8, 9, 10, 12, 14, 11, 
 
 static int vdi_maptab[MAX_VDI_COLS];
 extern char mapcol[];
-unsigned int black_pixel, white_pixel;
 extern Window imagewin;
 extern Colormap cmap;
 extern Cursor cursors[2];
@@ -379,6 +379,7 @@ static char *function_name[16] = {
 
 NYI(nothing)
 
+
 static int get_wrmode(int mode, int fg)
 {
 	switch (mode)
@@ -398,6 +399,7 @@ static int get_wrmode(int mode, int fg)
 	}
 }
 
+
 void vdi_redraw(int x, int y, int w, int h)
 {
 	V(("Redrawing (%d,%d,%d,%d)\n",x,y,w,h));
@@ -405,6 +407,7 @@ void vdi_redraw(int x, int y, int w, int h)
 }
 
 
+#if TRACE_VDI
 static void catchsig(int sig)
 {
 	int x, y;
@@ -420,8 +423,8 @@ static void catchsig(int sig)
 	{
 		image = XCreateImage(display, visual, depth, ZPixmap, 0, (char *)&data, 1, 1, 32, 1);
 		pixmap = XCreatePixmap(display, xw, 1, 1, depth);
-		gv.foreground = black_pixel;
-		gv.background = white_pixel;
+		gv.foreground = FIX_COLOR(BLACK);
+		gv.background = FIX_COLOR(WHITE);
 		gv.function = GXcopy;
 		gv.plane_mask = AllPlanes;
 		gv.graphics_exposures = False;
@@ -464,6 +467,7 @@ static void catchsig(int sig)
 	}
 	signal(sig, catchsig);
 }
+#endif /* TRACE_VDI */
 
 
 static unsigned long get_pixel(int x, int y)
@@ -500,8 +504,12 @@ void vdi_init(void)
 	int i, j, k = 0;
 	XGCValues gv;
 	Window id;
-	
+
+#if TRACE_VDI
 	signal(SIGUSR2, catchsig);
+#endif
+
+	/* Add the path to the system font if needed: */
 	{
 		char **path, **new_path;
 		int num_path;
@@ -512,12 +520,22 @@ void vdi_init(void)
 				break;
 		if (i >= num_path)
 		{
-			new_path =(char **) malloc((num_path + 1) * sizeof(char *));
-			for (i = 0; i < num_path; i++)
+			FILE *fh;
+			char fontsdirstr[strlen(STONXDIR)+12];
+			strcpy(fontsdirstr, STONXDIR);
+			strcat(fontsdirstr, "/fonts.dir");
+			/*fprintf(stderr, "\n%s\n", fontsdirstr);*/
+			fh = fopen(fontsdirstr, "r");  /* We try to open fonts.dir in that path */
+			if( fh!=NULL )                 /* We only add on success this path to the FontPath */
+			 {
+			  fclose(fh);
+			  new_path =(char **) malloc((num_path + 1) * sizeof(char *));
+			  for (i = 0; i < num_path; i++)
 				new_path[i] = path[i];
-			new_path[i] = STONXDIR;
-			XSetFontPath(display, new_path, num_path + 1);
-			free(new_path);
+			  new_path[i] = STONXDIR;
+			  XSetFontPath(display, new_path, num_path + 1);
+			  free(new_path);
+			 }
 		}
 		XFreeFontPath(path);
 	}
@@ -532,11 +550,26 @@ void vdi_init(void)
 			k++;
 		}
 	}
+
+	/* Now load the system font: */
 	for (i = 0; i < SYSFONTS; i++)
 	{
 		sysfont[i] = XLoadQueryFont(display, sysfontname[i]);
-		if (sysfont[i] == 0)
-			cleanup(2);
+		if (sysfont[i] == NULL)  /* If we can´t load the font... */
+		 {                       /* ...(e.g. the Atari fonts have not been installed)... */
+		  switch(i)              /* ...we try to load a standard font. */
+		   {
+		    case 0:  sysfontname[0]="-*-lucidatypewriter-medium-r-*-*-10-*-*-*-m-*-*-*"; break;
+	            case 1:  sysfontname[1]="-*-lucidatypewriter-medium-r-*-*-12-*-*-*-m-*-*-*"; break;
+	            case 2:  sysfontname[2]="-*-lucidatypewriter-medium-r-*-*-14-*-*-*-m-*-*-*"; break;
+		   }
+		  if( i<3 )  sysfont[i] = XLoadQueryFont(display, sysfontname[i]);  /* Second try */
+                 }
+		if (sysfont[i] == NULL)
+		 {
+		  fprintf(stderr, "Could not load font: %s\n", sysfontname[i]);
+		  cleanup(2);
+		 }
 	}
 	
 	cxi = XCreateImage(display, visual, 1, XYBitmap, 0, NULL, 16, 16, 16, 2);
@@ -551,9 +584,6 @@ void vdi_init(void)
 	    V(("FIX_COLOR(WHITE=%d) = %d\n",WHITE,FIX_COLOR(WHITE)));
 #endif
 	cgc = XCreateGC(display, cmask, GCForeground | GCBackground, &gv);
-
-	white_pixel = WhitePixel(display,XDefaultScreen(display)); /* 2001-02-27 (Thothy): These variables were not set, so vsc_form did not work */
-	black_pixel = BlackPixel(display,XDefaultScreen(display)); /* Perhaps there is a better solution by replacing them with FIX_COLOR one day */
 }
 
 
@@ -561,6 +591,8 @@ void vdi_exit(void)
 {
 	int i, j;
 	
+	if ( !display ) /* May happen! */
+	  return;
 	if (xw != None)
 	{
 		XDestroyWindow(display, xw);
@@ -703,11 +735,10 @@ static void init_window(void)
 	screen = DefaultScreen(display);
 	root = RootWindow(display, screen);
 	visual = DefaultVisual(display, screen);
-
 	if (xw == None)
 	{
 #if UPDATE_PHYS
-		xw = XCreateSimpleWindow(display, root, 0, 0, vdi_w, vdi_h, 0, black_pixel, white_pixel);
+		xw = XCreateSimpleWindow(display, root, 0, 0, vdi_w, vdi_h, 0, FIX_COLOR(BLACK), FIX_COLOR(WHITE));
 #else
 		xw = imagewin;
 #endif
@@ -1033,11 +1064,11 @@ static void init_filled(VWK * v)
 	gv.function = get_wrmode(v->wrmode, v->fill_color);
 	if (v->wrmode == MD_XOR)
 	{
-		gv.foreground = priv_cmap ? FIX_COLOR(1) : white_pixel;
+		gv.foreground = FIX_COLOR(BLACK);
 #if TRACE_VDI
 	    V(("FIX_COLOR(1) = %d; ",FIX_COLOR(1)));
 #endif
-		gv.background = priv_cmap ? 0 : FIX_COLOR(WHITE);
+		gv.background = FIX_COLOR(WHITE);
 #if TRACE_VDI
 	    V(("FIX_COLOR(WHITE=%d) = %d\n",WHITE,FIX_COLOR(WHITE)));
 	    V(("init_filled: fg = %ld, bg = %ld\n", gv.foreground, gv.background));
@@ -2408,23 +2439,24 @@ static int vsc_form(void)
 	cxi->bitmap_bit_order = MSBFirst;
 	cxi->data = (char *)INTIN(5);
 	cxi->bitmap_pad = 32;
-	XSetForeground(display, cgc, white_pixel);
-	XSetBackground(display, cgc, black_pixel);
+	XSetForeground(display, cgc, WhitePixel(display,XDefaultScreen(display)) );  /* FIXME: Markus thinks, we should use FIX_COLOR(WHITE/BLACK) here, Thomas thinks */
+	XSetBackground(display, cgc, BlackPixel(display,XDefaultScreen(display)) );  /* ...we should use White/BlackPixel - is someone there who can solve the problem? */
 	XPutImage(display, cmask, cgc, cxi, 0, 0, 0, 0, 16, 16);
 	cxi->data = (char *)INTIN(21);
 	XPutImage(display, cdata, cgc, cxi, 0, 0, 0, 0, 16, 16);
 	cols[0].pixel = FIX_COLOR(LM_W(INTIN(4)));
 #if TRACE_VDI
-	    V(("FIX_COLOR(%d) = %d; ",LM_W(INTIN(4)),FIX_COLOR(LM_W(INTIN(4)))));
+	 V(("FIX_COLOR(%d) = %d; ",LM_W(INTIN(4)),FIX_COLOR(LM_W(INTIN(4)))));
 #endif
 	cols[1].pixel = FIX_COLOR(LM_W(INTIN(3)));
 #if TRACE_VDI
-	    V(("FIX_COLOR(%d) = %d\n",LM_W(INTIN(3)),FIX_COLOR(LM_W(INTIN(3)))));
+	 V(("FIX_COLOR(%d) = %d\n",LM_W(INTIN(3)),FIX_COLOR(LM_W(INTIN(3)))));
 #endif
 	V((" Cursor fg/bg = %ld,%ld\n", cols[0].pixel, cols[1].pixel));
+	V((" FIX_COLOR(BLACK) = %d, FIX_COLOR(WHITE) = %d\n", FIX_COLOR(BLACK), FIX_COLOR(WHITE)));
 	if (depth == 1)
 	{
-		if (cols[0].pixel == white_pixel)
+		if (cols[0].pixel == FIX_COLOR(WHITE))
 		{
 			cols[0].red = cols[0].green = cols[0].blue = 0xffff;
 			cols[1].red = cols[1].green = cols[1].blue = 0x0;
@@ -3051,7 +3083,7 @@ int Vdi(void)
 	W c;
 	UL pblock;
 	
-	if (vdi)
+	if (vdi && display)
 	{
 	    if ( !vdi_done ) {
 		vdi_init();
@@ -3168,7 +3200,7 @@ void vdi_post(void)
 	}
 	if (!vdi)
 		return;
-	
+
 	/* fix the lookup table */
 	if (V_OPCODE == 1)
 	{
@@ -3178,18 +3210,27 @@ void vdi_post(void)
 
 			for (i = 0; i < MAX_VDI_COLS; i++)
 				vdi_maptab[i] = (1 << vdi_planes) - 1;
-			for (i = 0; i < (1 << vdi_planes); i++)
+			V(("BlackPixel = %ld\n", BlackPixel(display,XDefaultScreen(display))));
+			V(("WhitePixel = %ld\n", WhitePixel(display,XDefaultScreen(display))));
+			for (i = 0; i < (1 << vdi_planes); i++) {
 			    if ( indexed_color )
 				vdi_maptab[i] = vdi_maptab16[i] & ((1 << vdi_planes) - 1);
-			    else switch ( vdi_planes ) {
-			      case 1:
-				  vdi_maptab[i] = (i & 1)? BlackPixel(display,XDefaultScreen(display))
-				      : WhitePixel(display,XDefaultScreen(display));
+			    else switch ( i ) {
+			      /* FIXME: this should be the default part in every case! */
+			      case WHITE:
+			          vdi_maptab[i] = WhitePixel(display,XDefaultScreen(display));
+			          break;
+			      case BLACK:
+			          vdi_maptab[i] = BlackPixel(display,XDefaultScreen(display));
 				  break;
 			      default:
 				  vdi_maptab[i] = pixel_value_by_index[vdi_maptab16[i]];
 				  break;
 			    }
+			    V(("vdi_maptab[%d] = %d\n", i, vdi_maptab[i]));
+			}
+			V(("FIX_COLOR(BLACK) = %d\n", FIX_COLOR(BLACK)));
+			V(("FIX_COLOR(WHITE) = %d\n", FIX_COLOR(WHITE)));
 				
 			phys_handle = V_HANDLE;
 			init_vwk(phys_handle, phys_handle);
@@ -3214,6 +3255,7 @@ void vdi_post(void)
 	memcpy(&work_out_buf[0], INTOUT(0), 45*2);
 	memcpy(&work_out_buf[45], PTSOUT(0), 12*2);
 }
+
 
 void Init_Linea(void)
 {
