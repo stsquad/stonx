@@ -115,6 +115,12 @@
 #define NATIVE_BIOS 0
 
 
+/* Set this to 1 if you want a Monitor with which to observe the */
+/* internal state of the emulator and trace through the code     */
+#define MONITOR 0
+
+
+
 /*
  * Don't change following tests 
  */
@@ -130,7 +136,6 @@
 
 /* the following are mostly obsolete, please ignore... */
 #define STE 0
-#define MONITOR 0
 #define DEBUG 0
 #define CARTRIDGE 1
 #define WATCH 0
