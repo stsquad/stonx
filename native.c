@@ -169,6 +169,7 @@ int add_drive(char drive, char *fname)
 	return 1;
 }
 
+
 int disk_rw(char *as)
 {
 	W rwflag;
@@ -177,12 +178,12 @@ int disk_rw(char *as)
 	unsigned long recno;
 	
 	rwflag = LM_W(as);
-	buf = LM_UL(as + 2);
+	buf = LM_UL((UL *)(as + 2));
 	count = LM_UW(as + 6);
 	recno = LM_UW(as + 8);
 	dev = LM_UW(as + 10);
 	if (recno == 0xffff)
-		recno = LM_UL(as+12);
+		recno = LM_UL((UL *)(as+12));
 #if 0
 	fprintf(stderr,"Rwabs(%d,$%lx,Cnt:%d,Rec:%ld,%d), %x, %d:\n ", rwflag, (long)buf, count, recno, dev, drive_bits, boot_dev);
 #endif
