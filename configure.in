@@ -1,5 +1,6 @@
+dnl This is the the source file used to produce the configure script
 AC_INIT(defs.h)
-version="0.6.7.3"
+version="0.6.7.4 Development"
 AC_SUBST(version)
 echo "Configuring STonX version $version..."
 echo "#define VERSION \"$version\"">version.h
@@ -37,7 +38,9 @@ echo "no (good!)"]
 ,[
 shwrap32=1
 echo "yes (yuck)"]
-)
+,[
+echo "cross compiling an emulator? strange person"
+])
 AC_CHECK_PROGS(MAKEDEPEND,gccmakedep makedepend, no)
 if test "n$MAKEDEPEND" = nno; then
 cat <<'EOF'
@@ -88,6 +91,22 @@ echo "You need either atexit() or on_exit() for STonX to work correctly!")])
 if test $shwrap32 = 1; then
 def="$def -DSHWRAP32"
 fi
+#### Optional modules/features
+AC_ARG_ENABLE(monitor,
+[  --enable-monitor	Enable mini ICE type monitor (slows emulation)],
+enable_monitor=yes,
+enable_monitor=no)
+
+AC_ARG_ENABLE(svga,
+[  --enable-svga        Enables SVGA support (linux only?)],
+enable_svga=yes,
+enable_svga=no)
+
+AC_ARG_ENABLE(debug,
+[  --enable-debug       Puts the breaks on the compile options so gdb works!],
+enable_debug=yes,
+enable_debug=no)
+
 #### SYSTEM
 echo "Running config.guess to determine your system type..."
 t=`./config.guess`
@@ -273,7 +292,23 @@ statfs=FIX_ME_IN_GEMDOS.C
 fi
 AC_MSG_RESULT($statfs)
 def="$def -D$statfs"
-rm -f config.h; ln -s $conf config.h
+
+#
+# Now we can create a config.h based on system + enabled features
+#
+
+rm -f config.h
+cat $conf > config.h
+
+if test "$enable_monitor" = "yes"; then
+	echo "#define MONITOR 1" >> config.h
+fi
+
+ 
+#ln -s $conf config.h
+
+
+
 AC_SUBST(regs)
 AC_SUBST(def)
 AC_SUBST(xtra)
