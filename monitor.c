@@ -231,7 +231,10 @@ int update_monitor (UL *regs, int sr, int pcoff)
 	      case 'q':
 		{
 		  monitor=0;
+		  in_monitor=0;
 		  exit_val=1;
+		  stonx_exit();
+		  exit(0);
 		  break;
 		}
 	      case 'R':
