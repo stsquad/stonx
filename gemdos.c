@@ -496,21 +496,33 @@ UW date2dos (time_t t)
     return x->tm_mday|((x->tm_mon+1)<<5)|(MAX(x->tm_year-80,0)<<9);
 }
 
+
 void Fsnext (void)
 {
     UL bp;
     struct stat s;
-    struct dirent *e, etmp;
+    struct dirent *e;
+    struct
+    {
+        struct dirent etmpdirent;
+        /* On some systems like Irix 5.3, dirent.d_name is only declared as
+         * a "char d_name[1]", so we have to add some additional space after
+         * our etmpdirent variable here for the file name: */
+        char etmpname[256];
+    } etmp;
     char stname[TOS_NAMELEN+1];
     char uname[500];
     UB attribs;
     DTA *dta;
     UW da;
     int rr = -1;
-    if (((gemdos_drives >> cursdrv)&1)==0) return;
+
+    if (((gemdos_drives >> cursdrv)&1)==0)  return;
+
     bp = LM_UL(act_pd);
     dta = (DTA *)MEM(LM_UL(MEM(bp+32)));
     attribs = LM_UB(&(dta->dta_sattrib));
+
  repeat:
     SM_UL((UL *)&(dta -> magic),EVALID);
     do
@@ -525,7 +537,7 @@ void Fsnext (void)
 		SM_W((W *)&(dta->index),-1);
 		xclosedir(rr);
 		rr &= (FSNEXT_JUSTSTAT-1);
-		e = &etmp;
+		e = &etmp.etmpdirent;
 		strncpy (e->d_name,dta->dta_pat,TOS_NAMELEN);
 		e->d_name[TOS_NAMELEN] = '\0';
 		unix2fname(e->d_name,stname);
@@ -567,6 +579,7 @@ void Fsnext (void)
     SET_Z();
     return;
 }
+
 
 void Dsetpath (char *pname)
 {
