@@ -1,4 +1,4 @@
-#define VERSION "0.6.7.3"
+#define VERSION "0.6.7.4pre1"
 #define STONX_VERSION_MAJOR 0
 #define STONX_VERSION_MINOR 6
 #define STONX_PATCH_MAJOR 7
