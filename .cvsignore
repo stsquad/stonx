@@ -21,3 +21,5 @@ code1500.c
 gen
 gentabs.c
 stonx
+stonx.spec
+version.h
