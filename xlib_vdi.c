@@ -126,7 +126,7 @@ static int vdi_maptab16[] = { 0, 15, 1, 2, 4, 6, 3, 5, 7, 8, 9, 10, 12, 14, 11, 
 
 static int vdi_maptab[MAX_VDI_COLS];
 extern char mapcol[];
-unsigned int black_pixel, white_pixel; /* XXX */
+unsigned int black_pixel, white_pixel;
 extern Window imagewin;
 extern Colormap cmap;
 extern Cursor cursors[2];
@@ -551,6 +551,9 @@ void vdi_init(void)
 	    V(("FIX_COLOR(WHITE=%d) = %d\n",WHITE,FIX_COLOR(WHITE)));
 #endif
 	cgc = XCreateGC(display, cmask, GCForeground | GCBackground, &gv);
+
+	white_pixel = WhitePixel(display,XDefaultScreen(display)); /* 2001-02-27 (Thothy): These variables were not set, so vsc_form did not work */
+	black_pixel = BlackPixel(display,XDefaultScreen(display)); /* Perhaps there is a better solution by replacing them with FIX_COLOR one day */
 }
 
 
@@ -700,6 +703,7 @@ static void init_window(void)
 	screen = DefaultScreen(display);
 	root = RootWindow(display, screen);
 	visual = DefaultVisual(display, screen);
+
 	if (xw == None)
 	{
 #if UPDATE_PHYS
