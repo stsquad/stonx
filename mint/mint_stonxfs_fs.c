@@ -50,7 +50,7 @@
 #include "mint_stonxfs_fs.h"
 #include "mint_stonxfs_dev.h"
 #include "mint_misc.h"
-#include "stonxfsv.h"
+#include "atari/stonxfsv.h"
 
 #include "../options.h" /* see, if MINT_STONXFS is set to 0 */
 
