@@ -1,0 +1,18 @@
+# This file gets included by the Makefile in this directory to determine
+# the files that should go only into source distributions.
+
+COBJS = mint_comm.c \
+        mint_interface.c \
+	mint_misc.c \
+	mint_serial.c \
+	mint_stonxfs_dev.c \
+	mint_stonxfs_fs.c
+
+SRCFILES = $(COBJS) \
+	   mint_comm.h \
+	   mint_defs.h \
+	   mint_interface.h \
+	   mint_misc.h \
+	   mint_serial.h \
+	   mint_stonxfs_dev.h \
+	   mint_stonxfs_fs.h

@@ -1,0 +1,327 @@
+(This file is mostly obsolete as well, but might contain some useful
+information)
+
+      _____   _________           
+     /     \      |                  \     /
+     |            |                   \   /
+     \_____       |    ___    ___      \ /     ( ST on  )
+           \      |   /   \ |/   \     / \     ( Unix/X )
+           |      |   |   | |    |    /   \
+     \_____/      |   \___/ |    |  /      \
+      
+
+                       VERSION 0.6 
+
+              (C) 1995 by Marinos Yannikos
+               (nino@complang.tuwien.ac.at)
+      (http://www.complang.tuwien.ac.at/nino/home.html)
+
+	          ALL RIGHTS RESERVED
+ THIS PROGRAM IS PROVIDED "AS IS" WITHOUT A WARRANTY OF ANY KIND
+
+
+      See the file `COPYING' for licensing information
+
+         Last change to this file: December 21, 1995
+
+This file is separated into 4 sections:
+
+  1.  About STonX (general description)
+  2.  Frequently Asked Questions
+  3.  The Future 
+  4.  History
+
+--------------------------------------------------------------------------------
+
+ 1. ABOUT STonX
+ ##############
+
+Copyright information
+~~~~~~~~~~~~~~~~~~~~~
+STonX is free software and distributed under the GNU License. Read the file
+COPYING for details.
+
+Intruduction
+~~~~~~~~~~~~
+STonX is a software emulator, which runs on Unix workstations with the X Window
+system, and emulates an Atari ST computer. `Software emulator' means, that the
+system components, including the 68000 microprocessor, are emulated in software.
+This approach has the advantage, that it can be used regardless of the hardware
+the emulator runs on. Unfortunately, it also has the disadvantage that it is
+very slow.
+
+Why use an emulator?
+~~~~~~~~~~~~~~~~~~~~
+An emulator's sole purpose is to allow software written for a particular
+computer system to be used on other systems. A software emulator in particular
+is *not* useful for keeping your old programs while changing your hardware,
+except if the new hardware ist several orders of magnitude faster than the
+old one. 
+
+What can STonX do?
+~~~~~~~~~~~~~~~~~~
+As you may have guessed already, it is nearly impossible to emulate a computer
+system to its full extent. STonX was initially meant to be a very `low-level'
+emulator, meaning that it should be able to deal with hardware register 
+accesses and similar things, which it does quite well at the moment. A different
+approach would have been to disallow direct hardware access, and support only
+"clean" programs, like most GEM applications for example. At this time, STonX
+can cope with hardware accesses quite well (see below for limitations), and
+I hope to be able to finish the VDI driver for X in the near future, so that
+"clean" applications can use the graphics capabilities and speed of your X
+display.
+
+Here is a list of the emulated system components:
+
+* M68000 CPU     Everything (I hope) except Trace-Mode and correct bus- and
+                 address-error stack frames.
+
+* MFP            Only the necessary parts to get TOS to run (Timer C and
+                 VBL). The MFP interrupt priorities are completely bogus,
+                 as are the other interrupts in the system, for efficiency
+                 reasons and lack of a complete MFP emulation, mainly.
+
+* IKBD           Only keyboard keycodes and (incomplete) relative mouse mode.
+
+* Shifter        ST Shifter, the STE support is not yet complete (the possible
+                 word-alignment of the screen would cause problems with the
+                 ST-Low and -Mid to ZPixmap conversion routines). 
+
+* Disk-I/O       Still very limited. A general FDC/HDC-Emulation would probably
+                 not make sense, except for a few games. A GEMDOS-Driver for
+                 the Unix FS would be very useful. The native interface
+                 (opcode $a0ff, see 'faketos.c') will be helpful in implementing
+                 this.
+
+* Mega ST(E)     Still buggy, haven't had time to correct it. It gets the hour
+  Clock Chip     wrong sometimes, and the alarm timer is not implemented (among
+                 other things).
+
+* YM2149 sound   Available on several Unix platforms
+  chip
+
+* Serial &       Not very useful yet, but enough for testing some
+  parallel ports telecommunication software
+
+
+The Xlib-VDI Driver
+~~~~~~~~~~~~~~~~~~~
+As of version 0.3, the VDI is already quite usable. Note that the fonts used
+are all X fonts (BDF format), and must be installed properly. This is done in
+the Makefile (make fonts). The program `tosfonts' extracts the system fonts
+from the `tos.img' file (which you're going to need anyway), and installs
+them in the `data' subdirectory (see `data/makefonts.sh'). It also installs
+Latin-1 versions of these fonts so that you can use them for you XTerm windows!
+
+Not that although it only implements monochrome routines, the Xlib-VDI Driver
+only runs on 8-bit color displays at the moment (sorry).
+
+--------------------------------------------------------------------------------
+
+ 2. FREQUENTLY ASKED QUESTIONS
+ #############################
+
+Q: Why can't I compile STonX on my Computer with Zintorola 86060 processor and
+   Sluggix 0.8 Beta O.S.?
+A: If you have GNU-C and X11R5/6 for this system, and STonX still won't compile,
+   please let me know as soon as possible, I will try to fix it.
+
+Q: How do I leave the emulator `gently'?
+A: Press all 3 mouse buttons together
+
+Q: What do all the warnings mean?
+A: Some keycodes can not be generated, because no mapping is defined for
+   them in `Keysyms'. Have a look at that file, and then do a `xmodmap -pke'
+   to find suitable Keysyms for mapping the missing ST-Keycodes to.
+
+Q: Why doesn't STonX work on my X display?
+A: Currently, STonX is very choosy about X displays - it requires an 8 bit
+   display with PseudoColor visual capabilities. Building a version for
+   monochrome displays might be possible by defining -DMONO=1 in the Makefile,
+   but don't bet on it.
+
+Q: Why do the graphics look funny / why are the letters reversed?
+A: Because I've merged the modifications for little-endian frame buffers
+   without testing it afterwards. Please let me know if this happens!
+
+Q: Why does the emulator window go blank, and then my system starts swapping
+   for ages until I finally turn it off?
+A: STonX requires approximately 17MB memory, and during the initialization of
+   TOS it is quickly accessed linearly, so you should have at least 20MB
+   physical memory. You can try to add -DSMALL at the end of the DEF definition
+   in the Makefile and recompile everything. This will give create a version of
+   STonX which uses only 9MB of memory and emulates a 4MB ST. This option
+   has not been tested thoroughly, but seems to work.
+
+Q: What TOS versions does STonX work with? Where do I get TOS images?
+A: I tried it with TOS 2.06, other versions haven't been tested, but TOS 
+   versions which support plain STs should work with it. At the moment, you
+   can only use TOS ROM images which normally begin at $E00000 in memory
+   (256K ROMs). TOS is copyrighted, so it would be illegal to distribute
+   a TOS image with STonX. To make a TOS image just copy 256K of memory
+   from $E00000 to a file and put it in the STonX directory with the name
+   `tos.img'.
+
+Q: What's `cartridge.img' for?
+A: This is an cartridge image which installs the BIOS level disk routines.
+   It is necessary, since there is no FDC emulation (yet). If there was one,
+   the disk routines from TOS could be used.
+
+Q: How do I get the emulator to load a program?
+A: The emulator can't deal with single programs, only with disks and disk 
+   images. If you want to load a disk in a format your Unix box can read,
+   you can try the option -disk a:/dev/rfd0 (or replace /dev/rfd0 with
+   whatever designates the raw floppy disk device on your system) to load
+   directly from disk. This works on Suns. If you want to load a disk
+   with a strange format (10 or 11 sectors etc.), you need to make a disk
+   image on the ST, and load that disk image onto your Unix disk. To make
+   a disk image, copy all sectors from the disk to a file (e.g. sectors
+   0-1599 on a 80/10/2 disk). Then, use the option -a:File (replace File with
+   the name of the disk image). You can also map several files/disks to 
+   TOS drives at the same time, e.g. by using -c:File for drive C. Remember
+   that you always map something to drive A though.
+
+Q: Program XXX doesn't run, what should I do?
+A: If the program is known to run with the TOS you are using with STonX, 
+   and if it doesn't (or shouldn't) use any of the system components not
+   yet emulated (see section 1), and if you're getting a 2 bomb bus error,
+   it probably accesses a memory location which is not documented, but 
+   exists in STs. Please rebuild STonX with -DDEBUG=1, run the program
+   again, wait until the crash, and look at the end of DEBUGFILE for a
+   message like "pc=<A> sr=<B> BUS ERROR -> <C>". At the previous line,
+   there should be a description of the offending memory access. Please
+   inform me about it! Note that you're looking at the wrong BUS ERROR
+   message if you got 2 bombs on the screen and <C> above does not begin
+   with `2'.
+
+Q: Why are the locations of the ST and X mouse cursors different?
+A: Because the emulator has (at the moment) no way to tell where the
+   emulated system keeps its mouse cursor positions in memory. When you
+   enter the emulator window, you can freeze the ST mouse cursor with the
+   right mouse button, move to it with the X cursor, and press the right
+   mouse button again to "pick it up". A better solution is in the works...
+
+Q: Why do some keys seem to 'hang' e.g. in Megaroids?
+A: Because the interrupt priorities are bogus, and in some cases data from
+   the IKBD may be lost. 
+
+Q: Why can't the mouse be switched off (e.g. in games)?
+A: Because the emulated IKBD doesn't (yet) understand any commands
+
+Q: Where can I get the newest version of STonX? 
+A: Probably at ftp.complang.tuwien.ac.at/pub/nino/ or 
+   http://www.complang.tuwien.ac.at/nino/
+   Don't bet on it though! :-) 
+
+Q: Why do benchmark programs show much better values than what they should?
+A: Because Timer C, which is often used for measuring time, is running at
+   a lower frequency than the usual 200Hz. Look at the output to stderr when
+   starting STonX, it will tell you the actual frequency. If it is e.g. 50Hz,
+   the values reported by benchmark programs will be 4 x higher than they
+   should be.
+
+Q: When will the VDI driver be finished?
+A: If I knew the answer, I'd probably never have started... :-)
+
+Q: What can I do to speed up the development of STonX?
+A: You can try to bribe me with any amount of money, any type of hardware or
+   software for the Atari ST or SunOS 4.1 (no pirated stuff please).
+   A nice postcard might suffice too. :-)
+
+--------------------------------------------------------------------------------
+
+ 3. THE FUTURE
+ #############
+
+Things left to do:
+- Finish the VDI driver
+- Speed up the emulation with little-endian hosts
+- Maybe write a FDC emulation
+- Optimize a bit more
+- Complete the IKBD emulation (esp. Joystick)
+- Fix the bug in the clock chip emulation
+(etc. etc.)
+
+--------------------------------------------------------------------------------
+
+ 4. HISTORY
+ ##########
+
+In the beginning there were absurd plans, long sleepless nights, and incredible
+boredom.
+
+First version with a version number - Version 0.1 Alpha (Apr 11 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Added -refresh option
+- Wrote an `Autoconf' script
+- Removed the Xlib calls from the signal handler
+- Use sigaction() instead of signal() (Thanks to Des Herriott for the hint!)
+- Added global register variable declarations for SGIs (untested)
+- Fixed bug in colormap handling which bloated up the Xserver if colormap
+  changed frequently
+- Fixed bug which caused bus errors at naughty accesses to $ff8206
+  (Grav2 runs now! ;-))
+- The keyboard auto repeat is now only turned off if the X mouse pointer is
+  inside the emulator window
+- Merged some patches for little-endian machines and little-endian frame buffers
+  (untested)
+
+Version 0.2 Alpha (Apr 13 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Fixed invalid initialisation of sigset_t variable in hw.c
+- Fixed problem with multiple keycodes mapped to the same Keysym.
+  This prevented e.g. a keyboard reset with the usual combination if both the
+  normal and the Keypad Del key were mapped to the "Delete" keysym.
+- Fixed description of 8th change above. :-) (on -> off)
+- Changed the default frequencies to something more reasonable
+- Implemented (simple) VDI input functions
+- It is now possible to switch between the `old style' window and the VDI
+  window at runtime. This feature may disappear in the future.
+- X events are now processed at every VBL, not at every screen update
+- The `old style' window is not updated if the X pointer is in the VDI
+  window
+- Added -DSMALL for people with less memory and/or patience
+- Added a chmod +w Makefile to Makefile.in (make depend rule)
+- Changed stricmp() to strncasecmp()
+
+Version 0.3 Alpha (Apr 15 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Fixed 12 bit FAT assumption and Media-Change bug, large diskfiles work now
+- Improved the VDI driver, now it looks almost exactly like TOS VDI
+- Wrote programs to help convert GEM Bitmap Fonts to BDF format
+
+Version 0.4 Beta (Jul 25 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- first public release
+- Integrated Griff's blitter emulator
+- The VDI driver redraws at expose events now
+- The VDI driver works with monochrome displays now, and -DMONO has been 
+  eliminated
+- Little-endian fixes for the VDI driver and fnttobdf
+- Linux port and assembly support
+- Emulation is a bit faster now for some instructions
+- Condition codes N,Z are now evaluated lazily (this makes STonX incompatible
+  with the real 68000 in some rare cases, but I haven't seen code that uses
+  this)
+
+Version 0.5 (Nov 30 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~
+- Integrated sound, serial and parallel port support
+- Fixed a few bugs, e.g. the one that caused the Alpha console crash
+- Added colormap sharing (#define NEWCOLOR 1 in screen.c)
+- Added a Unix filesystem interface (option -fs, file gemdos.c)
+- More assembly support for x86
+- mkfonts.sh is now a /bin/sh script
+- TOS 1.X support where X=0,2,4. Executing programs over the Unix filesystem
+  interface may not work with TOS <1.4 (sorry)
+- Timer C is now optionally 200Hz
+
+Version 0.6 (Dec 21, 1995)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Emulation code has been almost completely rewritten, resulting in 
+  1) 20-80% speed increase, 65% on my Linux PC and 80% on our Alphas
+  2) Less memory and more time needed to compile cpu.c 
+  3) More easily maintainable code
+- experimental implementation of the -size option
+- added Griff's patches to main.c to read options from a $HOME/.stonxrc file
+

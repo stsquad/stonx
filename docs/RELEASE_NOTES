@@ -1,0 +1,55 @@
+Release notes for version 0.6.7.3
+=================================
+
+This version fixes some glitches in the x driver.
+
+Release notes for version 0.6.7.2
+=================================
+
+This version fixes some problems with the mouse, the linux audio,
+comes again with a german Keysym and some changes in the keysym
+parser. 
+
+This version has linux joystick support and with the db9 driver
+of the linux kernel even supports atari joysticks connected to the
+parallel port.
+
+Another new feature is the fullscreen option for the x video driver.
+
+Release notes for version 0.6.7.1
+=================================
+
+This version is a improved "almost-there" version of STonX
+0.6.7-epsilon. It is improved by a lot of people. Some are shown at
+AUTHORS file but there a some more (e.g. the team of S.u.S.E. labs).
+
+Xlib-VDI still does not work, but you can enable it, to see how it 
+would work.
+
+A lot of other things work very nice e.g. grabbing and ungrabbing the
+mouse and keyboard and freeze STonX if ungrabbed. Most of these new
+features are configurable (see options.h).
+
+Some of the nice new features are the native stonxfs routines.
+stonxfs.xfs is a filesystem driver to be used at MiNT (see
+mint/atari/README).
+
+-mjk
+
+
+Release notes for version 0.6.7-epsilon
+=======================================
+
+This version is the "almost-there" version of STonX 0.6.7 (which is going
+to be the last "release" version before the major changes in the current
+development versions are released.
+
+The Xlib-VDI driver is still disabled (sorry) and may or may not be 
+re-integrated before the final 0.6.7 release. This depends mostly on
+how much work it is to get it to work again after all the latest changes.
+
+Please notify me of any bugs or installation problems as soon as possible
+(mail me at nino@complang.tuwien.ac.at), even if you have reported a bug
+previously and I haven't had time or forgot to fix it.
+
+-nino

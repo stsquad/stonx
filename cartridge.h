@@ -1,0 +1,6 @@
+#define CART_OLD_GEMDOS  0xfa0400
+#define CART_NEW_GEMDOS  (CART_OLD_GEMDOS+4)
+#define CART_CALL_GEMDOS 0xfa0180
+#define CART_AES_REDRAW  0xfa0300
+#define CART_FAKE_BPB    0xfa4000
+

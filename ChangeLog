@@ -1,0 +1,134 @@
+2001-02-20  Markus Kohm, STonX-0.6.7.3
+
+        * Bugfixes in x.c
+	
+2001-02-13  Till Harbaum, STonX-0.6.7.2
+
+	* Added joystick support.
+
+	* Improved linux sound routines.
+
+	* Added option '-size fullscreen' to x driver.
+
+	* Improved mouse handling (no warping, atari and x mouse 
+	  always match).
+	
+	* Keysym parsing now accepts decimal and hex constants,
+	  new german Keymap.G file.
+
+ 	* Default vbl frequency increased to 50Hz for fluid mouse
+	  movement and correct speed of final.tos.
+	
+2001-02-05  Markus Kohm, STonX-0.6.7.1
+
+	* missing DIST files added at Makefile.in
+
+	* recursive make of stonx.xfs fixed
+
+2001-02-05  Markus Kohm
+
+	* Added shutdown-native call at cartridge memory but without need
+	  of cartridge.img.
+
+	* Created sub-makefiles and improved the recursive make of the
+	  sub-makefile. Here is work to do (see Makefile.in).
+
+2001-02-04  Markus Kohm
+
+	* stonxfs: added "not installed"-message, in case parts are not
+	  activated at STonX.
+
+2001-02-03  Markus Kohm
+
+	* x.c: changed bug at parameter "-wpos <x>:<y>".
+
+	* mint_misc.c: braces added, to avoid compiler warnings.
+
+	* Added missing initialization of serial und communication device.
+
+	* Moved code between files.
+
+2001-02-02  Markus Kohm
+
+	* Complete rearange of stonx.xfs sources.
+
+	* New initialization routine at stonx.xfs.
+
+2001-01-30  Markus Kohm
+
+	* Makefile.in changed to not longer use libSTonXfs4MiNT.
+
+	* STonX creates a cookie at 0xfaf800 (before end of cartridge rom).
+
+	* Chris' changes to add a communication and a serial MiNT device.
+
+	* Optional ungrabbing by mouse button 2 added (MOUSE2_UNGRABS).
+
+2001-01-25  Markus Kohm
+
+	* Chris' changes to grab mouse and keyboard to STonX and some more
+	  changes to leave STonX by SHIFT-PAUSE or to simulate left double
+	  with mouse button 2.
+
+	* Additional changes to make Chris' changes optional (see options.h)
+
+2001-01-25  Markus Kohm
+
+	* Chris' changes to optional do not emulate MODEM1
+
+2001-01-25  Markus Kohm
+
+	* gemdos.c:
+	  do some outputs only at verbose mode.
+
+2001-01-25  Markus Kohm
+
+	* cpu.c:
+	  lots of output is only done at verbose mode
+
+2001-01-25  Markus Kohm
+
+	* audio.c:
+	  include <sys/soundcard.h> instead of <linux/soundcard.h>
+	  and change comments added.
+
+2001-01-25  Markus Kohm
+
+	* distinction between STonX and STonVGA is simply done by
+	  linking, all other modules are same.
+
+	* xlib_vdi.c, x.c:
+	  native vdi at xlib_vdi.c uses the pixel by index of x.c, if
+	  X-Server is not at indexed 8 bit mode.
+	  NOTE: Does only work, if priv_cmap (AFIK this is done).
+
+
+2001-01-09  Markus Kohm
+
+	* x.c: AltGr-Bug fixed
+
+
+2001-01-08  Markus Kohm
+
+	* missing ";" at bios.c inserted
+
+	* missing -L. inserted at Makefile.in
+
+	* missing ";" at screen.h inserted
+
+	* Makefile.in and configure.in changed to be more compatible
+
+	* Generated file "configure" removed from cvs.
+
+
+2001-01-07  Markus Kohm
+
+	* Added thothy´s patches.
+
+
+2001-01-07  Markus Kohm
+
+	* All changes made to my version of STonX
+	  (based on STonX-0.6.7-epsilon).
+
+

@@ -1,0 +1,242 @@
+#
+# FIXME:  This is a very, very ugly Makefile.in!!!
+# FIXME:  We should throw away the autoconf things and make it using
+# FIXME:  CONFIGVARS, RULES, BINFILES, SCRFILES, EXTRAFILES, MISCFILES
+# FIXME:  like we've done at subdirectory mint and m68k-stuff.
+# FIXME:  In that case we not longer need a Makefile.in or configure.
+# FIXME:  It would be nice to have also a 'make config' or
+# FIXME:  'make menueconfig' or even 'make xconfig'.
+# FIXME:  We also could make a complete automake, autoconf configuration.
+# FIXME:  This would be a lot of work and there are lots of people thinking
+# FIXME:  that would be a mess.
+#
+
+.SUFFIXES: 	.m4 .img .S .prof .i .cs .tab
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+SHELL=/bin/sh
+MAKEDEPEND=@MAKEDEPEND@
+SUBDIRS = m68k-stuff mint
+
+# Register variables (-ffixed-reg)
+REGS= @regs@
+
+# Optimization and debugging options
+OPT=@copt@
+
+# Additional header file paths
+INC=-I. @X_CFLAGS@
+
+# for MONITOR=1 we need a System V compatible curses library - I need to
+# write an Autoconf macro to test for that...
+#Linux:
+#INC=@X_CFLAGS@ -I/usr/include/ncurses
+
+# X11 library path
+XLIBS=@X_LIBS@ @X_PRE_LIBS@ -lXext -lX11 @X_EXTRA_LIBS@ @xtra@
+SFLAGS=
+# MONITOR=1:
+#Linux:
+#XLIBS=@X_LIBS@ -L../../binutils-2.4 -lopcodes -lbfd -liberty -lncurses
+
+#Linux SVGALIB support :
+SVGALIBS=-lvgagl -lvga 
+
+STONXDIR=@datadir@/stonx
+DEF= @def@ -DINLINE=@inline@ -DSTONXDIR=\"$(STONXDIR)\"
+
+# Compiler
+#CC=@CC@ @static@ $(REGS)
+#CC=gcc -ansi -Wall -W -Wpointer-arith -Wstrict-prototypes -Wno-unused
+CC=@CC@ 
+SCC=@SCC@ $(REGS)
+
+# Preprocessor
+CPP=@CPP@
+
+CFLAGS= $(INC) $(AINC) $(DEF) $(ADEF) $(OPT) $(SFLAGS)
+OBJ=cpu.o monitor.o io.o main.o native.o utils.o ikbd.o debug.o\
+	blitter.o mem.o audio.o midi.o\
+	gemdos.o ui.o screen.o fdc.o bios.o\
+	syscalls.o memarray.o sfp.o toserror.o\
+	cookie.o
+
+SVGAOBJ=svga.o svgalib_vdi.o
+
+XOBJ=x.o xlib_vdi.o
+
+MOREOBJ= code0000.o code0300.o code0600.o code0900.o code1200.o code1500.o
+
+SUBOBJS= m68k_stuff_dump.o \
+	 mint_comm.o mint_stonxfs_fs.o mint_stonxfs_dev.o\
+	 mint_interface.o mint_serial.o mint_misc.o \
+
+CSRC=$(OBJ:.o=.c) $(SVGAOBJ:.o=.c) $(XOBJ:.o=.c) gen.c
+DIST=$(CSRC) am.h mem.h debug.h defs.h main.h xlib_vdi.h tosdefs.h\
+	ikbd.h screen.h Keysyms Makefile.in \
+	docs/AUTHORS docs/DEBUGGING docs/FONTS docs/INSTALL docs/PROGRAMS \
+	docs/README docs/RELEASE_NOTES docs/TOS-VERSIONS \
+	configure fill.xbm iotab1.c iotab2.c config/*.[hc]\
+	config.guess cartridge.img \
+	tosfonts.c fonthdr.h fnttobdf.c data/makefonts.sh \
+	blitter.c audio.c mem.c memarray.c bios.c \
+	options.h gemdos.h COPYING configure.in\
+	cartridge.S 68000.def gen.c gendefs.m4 gendefs.h emulator.h\
+	amdefs.h genhead.c ui.c m4_to_c.sh cpu.h stonx.Keysyms \
+	atari/FLOPPY-4MB atari/bench1.pas atari/bench1.prg atari/final.tos \
+	fdc.c\
+	syscalls.h utils.h iofuncs.h blitter.h native.h audio.h io.h ui.h \
+	fdc.h cookie.h svgalib_vdi.h x.h \
+	svga.h cartridge.h midi.c midi.h sfp.h toserror.h \
+	DEPENDENCIES RULES CONFIGVARS PHONY ChangeLog \
+	mint/BINFILES mint/SRCFILES mint/EXTRAFILES mint/MISCFILES \
+	mint/Makefile \
+	mint/mint_comm.c mint/mint_stonxfs_fs.c mint/mint_stonxfs_dev.c\
+	mint/mint_interface.c mint/mint_serial.c mint/mint_misc.c \
+	mint/mint_defs.h mint/mint_comm.h mint/mint_serial.h \
+	mint/mint_stonxfs_fs.h mint/mint_stonxfs_fs.h mint/mint_interface.h \
+	mint/mint_misc.h mint/mint_stonxfs_dev.h mint/stonxfsv.h \
+	mint/atari/BINFILES mint/atari/SRCFILES mint/atari/EXTRAFILES \
+	mint/atari/MISCFILES mint/atari/Makefile mint/atari/README \
+	mint/atari/bypass.s mint/atari/callstonx.s mint/atari/com_dev.c \
+	mint/atari/com_dev.h mint/atari/serial_dev.c mint/atari/serial_dev.h \
+	mint/atari/stonx_dev.c mint/atari/stonx_dev.h mint/atari/main.c \
+	mint/atari/stonxfsv.h mint/atari/stonx.xfs mint/atari/global.h \
+	mint/atari/stonx_xfs.c mint/atari/stonx_xfs.h \
+	m68k-stuff/BINFILES m68k-stuff/SRCFILES m68k-stuff/EXTRAFILES \
+	m68k-stuff/MISCFILES m68k-stuff/Makefile \
+	m68k-stuff/m68k-stuff.pl m68k-stuff/m68k-stuff.s \
+	m68k-stuff/m68k_stuff_dump.h m68k-stuff/m68k_stuff_dump.c
+
+DEPSRC=$(CSRC) $(MOREOBJ:.o=.c)
+
+#ROMOFF=16515072
+ROMOFF=1048576
+
+DIR=STonX-@version@
+INSTBIN=@bindir@
+
+.c.o:
+	$(SCC) $(CFLAGS) -c $< -o $@
+
+.c.s:
+	$(SCC) $(CFLAGS) -S $<
+
+.m4.c:
+	m4 < $< > $@
+
+.c.cs:
+	$(CC) $(CFLAGS) -fverbose-asm -S $< -o $@ 
+
+.c.i:	
+	$(CPP) $(CFLAGS) $< > $@
+
+all:	rekursive configure Makefile stonx stonvga cartridge.img \
+	#fnttobdf tosfonts fonts
+
+rekursive: $(SUBDIRS)
+	@for subdir in $(SUBDIRS) ; do \
+	  (cd $$subdir; $(MAKE) -r all); \
+	done
+
+Makefile:	Makefile.in
+	configure
+
+configure:	configure.in
+	autoconf
+
+fonts:	fonts-done.stmp
+
+fonts-done.stmp:	tosfonts 
+	@if test ! -f tos.img; then \
+	echo "Please copy a TOS image to this directory as tos.img"; \
+	exit 1; \
+	fi; \
+	echo "Making the System fonts..."; \
+	test -d data || mkdir data; \
+	./tosfonts <tos.img; \
+	mv System?.fnt data; \
+	(cd data; ./makefonts.sh) && touch fonts-done.stmp
+
+gen:	gen.c amdefs.h options.h config.h
+	$(CC) -O -o $@ gen.c
+
+code.m4 code0000.m4 code0300.m4 code0600.m4 code0900.m4 code1200.m4 code1500.m4:	gen 68000.def genhead.c
+	cat genhead.c  >code.m4
+	./gen <68000.def >>code.m4
+
+code.c code0000.c code0300.c code0600.c code0900.c code1200.c code1500.c:	code.m4 code0000.m4 code0300.m4 code0600.m4 code0900.m4 code1200.m4 code1500.m4 gendefs.m4
+	./m4_to_c.sh
+
+cpu.o:	code.c
+
+stonx:	$(OBJ) $(XOBJ) $(MOREOBJ)
+	$(SCC) @static@ -o $@ $(OBJ) $(XOBJ) $(MOREOBJ) $(SUBOBJS) \
+               $(XLIBS)
+
+stonvga: $(OBJ) $(SVGAOBJ) $(MOREOBJ)
+	$(SCC) @static@ -o $@ $(OBJ) $(SVGAOBJ) $(MOREOBJ) $(SUBOBJS) \
+	       $(SVGALIBS)
+
+fnttobdf:	fnttobdf.c
+	$(CC) -o $@ fnttobdf.c $(XLIBS) @X_PRE_LIBS@ -lXext -lX11 @X_EXTRA_LIBS@
+
+tosfonts:	tosfonts.c
+	$(CC) -o $@ tosfonts.c $(XLIBS) @X_PRE_LIBS@ -lXext -lX11 @X_EXTRA_LIBS@
+
+clean:
+	rm -f $(OBJ) $(MOREOBJ) $(SUBOBJ) $(XOBJ) $(SVGAOBJ) \
+	rm -f mon.out gmon.out fonts-done.stmp
+	rm -f tosfonts fnttobdf data/System?.fnt tosfonts.o fnttobdf.o\
+              execute.o
+
+realclean: clean
+	rm -f gen code*.c code*.m4 gentabs.c
+
+distclean: realclean
+	rm -f Makefile config.cache config.status config.h config.log \
+              Makefile.bak Makefile.devel\
+              configure
+
+dist:	$(DIST)
+	rm -rf /tmp/$(DIR)
+	mkdir /tmp/$(DIR)
+	tar cf - $(DIST)|(cd /tmp/$(DIR); tar xpf -)
+	(cd /tmp; tar cf - $(DIR)|gzip -9 > $(DIR).tar.gz)
+
+bindist:
+	(cd /tmp/$(DIR); rm -rf *.o *.c *.h m4_to_c.sh *.m4 68000.def Makefile* config* cartridge.S data fnttobdf fill.xbm fonts-done.stmp gen kludge tosfonts)
+
+install:
+	install -c -s stonx $(INSTBIN)/stonx
+	install -c -s stonvga $(INSTBIN)/stonvga
+	mkdir -p $(STONXDIR)/gemdos_c
+	cp cartridge.img $(STONXDIR)/gemdos_c
+	@if test -f /etc/stonxrc; then \
+	echo "/etc/stonxrc already exists, creating /etc/stonxrc.new" >&2; \
+	echo "fs C:$(STONXDIR)/gemdos_c" > /etc/stonxrc.new ; \
+	echo "vbl 2 refresh 2 chunky" >> /etc/stonxrc.new ; \
+	echo "boot c" >> /etc/stonxrc.new ; \
+	else \
+	echo cartridge $(PWD)/cartridge.img > /etc/stonxrc ; \
+	echo "fs C:$(STONXDIR)/gemdos_c" > /etc/stonxrc ; \
+	echo "vbl 2 refresh 2 chunky" >> /etc/stonxrc ; \
+	echo "boot c" >> /etc/stonxrc ; \
+	fi ; \
+	echo "To complete installation you should copy tos.img to:" ; \
+        echo "    " $(STONXDIR)/gemdos_c/ ; \
+	echo "And you should copy your prefered Keysyms file to /etc/stonx.Keysyms ."
+depend: $(DEPSRC) 
+	cp Makefile Makefile.bak
+	chmod +w Makefile
+	$(MAKEDEPEND) $(INC) $(DEF) $(DEPSRC) 
+	sed -n '/^# DO NOT DELETE/,$$p' < Makefile > Makefile.tmp
+	sed -n '1,/^# DO NOT DELETE/p' < Makefile > Makefile.new
+	tail +2 Makefile.tmp|\
+	sed 's/^\([A-Za-z0-9_]*\)\.o:/\1.o \1.ln:/g'>>Makefile.new
+	rm -f Makefile.tmp
+	mv Makefile.new Makefile
+
+# DO NOT DELETE

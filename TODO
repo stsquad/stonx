@@ -1,0 +1,7 @@
+Version 0.6.7.3 Till Harbaum:
+	* Sound support has a delay on certain machines, since the
+	  audio buffer runs full. Perhaps reduce sample generation 
+ 	  by some percent ... but that causes frequent audio 
+	  interruptions on my machine ...
+
+	* binary compiled with gcc-2.96 (RH 7.0) does not run

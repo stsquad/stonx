@@ -1,0 +1,19 @@
+# This file gets included by the Makefile in this directory to determine
+# the files that should go only into source distributions.
+
+HEADER = global.h \
+         stonxfsv.h \
+         stonx_xfs.h \
+	 stonx_dev.h \
+	 serial_dev.h \
+	 com_dev.h
+
+COBJS  = main.c \
+         stonx_xfs.c \
+	 stonx_dev.c \
+	 serial_dev.c \
+	 com_dev.c \
+         callstonx.s \
+         bypass.s
+
+SRCFILES = $(HEADER) $(COBJS)

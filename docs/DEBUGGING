@@ -1,0 +1,22 @@
+What to do in case of a bug:
+
+1) Look at the list of known bugs on my STonX Web page at
+   http://www.complang.tuwien.ac.at/nino/stemu.html
+
+2) If it's not there and you think it's easy to fix, or if you think you can't
+   or don't want to help me find it send me e-mail
+
+3) Try installing the debugging environment. You'll need the GNU Binutils, 
+   version 2.4 or higher, cross-compiled for a sun2 target. Copy the libraries
+   libbfd.a, libopcodes.a, libiberty.a from their directories into the STonX
+   directory. Copy the missing header files from the binutils-*/include
+   directory into the STonX directory (bfd.h, dis-asm.h etc.). Get a System V
+   compatible curses library (ncurses works, as do the libraries in
+   /usr/5include and /usr/5lib on old Suns and the OSF/1 libraries). The
+   GNU ncurses library also works and is available for most systems. Add
+   the necessary -I for the curses library (e.g. -I/usr/include/ncurses for
+   Linux) to the CFLAGS in the Makefile. Add -lbfd -lopcodes -liberty -L<curses
+   library path> to the STonX linking command (the line following the one
+   beginning with stonx: in the Makefile). Set MONITOR to 1 in options.h and
+   compile again. Now try to find the problem by using the built-in monitor.
+
