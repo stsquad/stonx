@@ -1,6 +1,11 @@
+2003-05-11 Thomas Huth
+	* The pexec code in the cartridge.img now uses mode=6 instead of mode=4
+	  if possible. With mode=4 the memory of a started program is lost
+	  after its termination.
+
 2003-02-13 Thomas Huth
-    * Changed load_tos() : STonX can now load 512kB ROM images, too
-      (usefull for running EmuTOS).
+	* Changed load_tos() : STonX can now load 512kB ROM images, too
+	  (usefull for running EmuTOS).
 
 2003-01-31 Thomas Huth
 	* Improved the Makefile.in ("make install" should work better now).

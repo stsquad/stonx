@@ -65,9 +65,9 @@ init:
 	move.l #mediach, 0x47e.w
 	move.l #vidchng, 0x46e.w
 
-	move #0x30, -(sp)   | get TOS version (then STonX can intercept trap #1)
+	move #0x30,-(sp)    | Sversion (then STonX can intercept trap #1)
 	trap #1             | call GEMDOS
-	addq #2, sp
+	addq #2,sp
 
 	move.w 0x446.w, d0  | get the default boot drive from sysvar
 	move d0, -(sp)      | put it on stack
@@ -209,6 +209,7 @@ unixfs:
 	bvs.s pexec     	| V bit = 1
 	bne.s go_oldgemdos      | Z bit = 0
 	rte
+
 go_oldgemdos:
 |	pea oldgemdosmsg	
 |	bsr print
@@ -216,6 +217,7 @@ go_oldgemdos:
 
 	move.l old_gemdos,a0    | fallback to TOS
 	jmp (a0)
+
 pexec:
 	lea 8(sp),a0           
 	btst #5,(sp)           
@@ -238,8 +240,17 @@ mode0:                          | load, relocate and start program
 	clr.l 10(a6)            | clear environment string
 	move.l d0,6(a6)         | copy command arguments pointer
 
-	move #4,(a6)		| pexec mode 4 for exec. prepared program
-
+	move #48,-(sp)          | Sversion: get GEMDOS version
+	trap #1                 | call GEMDOS
+	addq #2,sp
+	ror.w #8,d0             | Major vers. to high, minor vers. to low byte
+	cmp.w #0x0015,d0
+	bge.s gd_015
+	move.w #4,(a6)          | pexec mode 4 for exec. prepared program
+	bra.s mode_ok
+gd_015:
+	move.w #6,(a6)          | On GEMDOS 0.15 and higher, we can use mode 6
+mode_ok:
 	move.l (sp)+,a6         | restore a6
         			| after finding, basepage creation and
 	bra go_oldgemdos        |   relocation start prepared program
@@ -302,6 +313,7 @@ find_prog:
 	bra.s gohome
 findprog_ok:
 	rts
+
 pexec5: 			| pexec mode 5 (allocate basepage)
 	move.l 10(a6),-(sp)     | get environment
 	move.l 6(a6),-(sp)      | get programm arguments
