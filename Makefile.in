@@ -35,15 +35,18 @@ INC=-I. @X_CFLAGS@
 # X11 library path
 XLIBS=@X_LIBS@ @X_PRE_LIBS@ -lXext -lX11 @X_EXTRA_LIBS@ @xtra@
 SFLAGS=
-# MONITOR flags
+
+#Monitor support, call configure with --enable-monitor
 MON_OBJS = @mon_objs@
 MON_FILES = @mon_files@
 
 #Linux:
 #XLIBS=@X_LIBS@ -L../../binutils-2.4 -lopcodes -lbfd -liberty -lncurses
 
-#Linux SVGALIB support :
+#Linux SVGALIB support, call configure with --enable-svga
 SVGALIBS=-lvgagl -lvga 
+SVGAOBJ=@svga_objs@
+SVGATARGET=@svga_target@
 
 STONXDIR=@datadir@/stonx
 DEF= @def@ -DINLINE=@inline@ -DSTONXDIR=\"$(STONXDIR)\"
@@ -64,7 +67,6 @@ OBJ=cpu.o $(MON_OBJS) io.o main.o native.o utils.o ikbd.o debug.o\
 	syscalls.o memarray.o sfp.o toserror.o\
 	cookie.o
 
-SVGAOBJ=svga.o svgalib_vdi.o
 
 XOBJ=x.o xlib_vdi.o
 
@@ -134,7 +136,7 @@ INSTBIN=@bindir@
 .c.i:	
 	$(CPP) $(CFLAGS) $< > $@
 
-all:	rekursive configure Makefile stonx stonvga cartridge.img \
+all:	rekursive configure Makefile stonx @svga_target@ cartridge.img \
 	#fnttobdf tosfonts fonts
 
 rekursive: $(SUBDIRS)
