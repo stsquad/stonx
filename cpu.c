@@ -31,6 +31,8 @@
 #include "utils.h"
 #include "cookie.h"
 
+#define MONITOR 1
+
 #define EXCEPTION(n) exception(n, LM_UL(EXCEPTION_VECTOR(n)))
 #define NOTREACHED assert(0);
 
@@ -369,6 +371,12 @@ static INLINE void V_EX (UL addr, int rw)
 	sr &= 0xf8ff;
 	sr |= 0x0700;	/* BUG */
 #endif
+	/* Chance to update monitor 
+	** TODO: flag it so we don't do it at every exception!
+	*/
+	update_monitor(&dreg, sr, pc,1);
+
+
 }
 
 void EX_BUS_ERROR (UL addr, int rw)
@@ -436,9 +444,9 @@ void ex_breakpt (void)
 {
 	pc -= 2;
 #if MONITOR
-	if (!enter_monitor())
+	update_monitor(&dreg, sr, pc,1);
 #endif
-		EXCEPTION(T_ILLEGAL);
+	EXCEPTION(T_ILLEGAL);
 }
 
 void ex_privileged(void)
@@ -910,8 +918,13 @@ try{
 	{
 		unsigned int iw;
 #if MONITOR
-		if (update_monitor(dreg, sr, pc) == 'q') return;
+		if (update_monitor(&dreg, sr, pc,0)) 
+		  {
+		    return;
+		  } else {
+
 		count++;
+		  }
 #endif
 #if PROFILE
 		if (flags) process_flags(iw);
@@ -987,9 +1000,7 @@ void init_cpu (void)
 	SM_UL(ADDR(4),LM_UL(MEM(tosstart+4)));
 	SP = LM_UL(ADDR(0));
 	pc = LM_UL(ADDR(4));
-#if 0
 	fprintf(stderr,"Longwords at 0, 4 initialized to %0lx,%0lx\n",
 		(long)SP,(long)pc);
-#endif
 }
 #endif
