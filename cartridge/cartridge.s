@@ -65,7 +65,7 @@ init:
 	move.l #mediach, 0x47e.w
 	move.l #vidchng, 0x46e.w
 
-	move #0x30, -(sp)   | get TOS version (then STonX can intercept trap #2)
+	move #0x30, -(sp)   | get TOS version (then STonX can intercept trap #1)
 	trap #1             | call GEMDOS
 	addq #2, sp
 
@@ -77,7 +77,6 @@ init:
                     
 	rts
 
-	.even
 initmsg:
 	.ascii "CART: init - cartridge initialization\n\0"
         .even
@@ -370,7 +369,7 @@ reloc:                          | load and relocate the code
 	tst.w 254(a5)
 	bne.s relocdone
 
-|	move.l (a4)+,d7 	| Seems sometimes not to be workd aligned :-(
+|	move.l (a4)+,d7 	| Seems sometimes not to be word aligned :-(
 	move.b (a4)+,d7
 	lsl.w #8,d7
 	move.b (a4)+,d7
