@@ -31,6 +31,8 @@ static UW watch_val = 0;
 
 static monitor_signal_type signal_break=BREAK;
 
+/* others */
+static UL current_pos = 0; /* where the dissasembler is at */
 
 /* For parsing cmd lines */
 #define EQ(_x,_y) (strncasecmp(_x,_y,strlen(_y))==0)
@@ -52,6 +54,7 @@ static void print_help (void);
 static void set_breakpoint (command *cmd);
 static void dump_memory (command *cmd);
 /* other */
+static command  *parse_command(char *cmd);
 static int dissassemble (int pos, int count);
 static void dump_registers (UL *regs, int sr);
 
@@ -74,6 +77,10 @@ void init_monitor (int startflag)
 ** New function to signal events to monitor
 ** e.g. Exceptions, Shift-pause etc..
 **
+** The signals are defined in monitor.h (its a bitmask)
+** Just sprinkle you code with signal_monitor (FLAG) at
+** the places you want.
+**
 ** At the moment it just sets the in_monitor flag for
 ** when the execute loop next gets round to us!
 ** 
@@ -83,12 +90,16 @@ void init_monitor (int startflag)
 
 void signal_monitor (monitor_signal_type reason,void *data)
 {
-  fprintf (stderr,"Signal to monitor %x\n",reason);
+  if (in_monitor)
+    { /* if already in monitor let the user know*/
+      fprintf (stderr,"Signal to monitor %x\n",reason);
+    }
 
   if (reason&signal_break)
     {
       /* May put more advanced processing here?*/
       in_monitor=1;
+      fprintf (stderr,"Signal %x triggered break.\n",reason);
     }
 }
 
@@ -111,6 +122,9 @@ void kill_monitor (void)
 ** Interesting vars:
 **     cmd - string for processing debugger commands
 **     count - count of monitor entries (used for executing n instructions)
+**
+** TODO:
+**   1. Why pass regs (and SR?) as they are globals?
 */
 
 int update_monitor (UL *regs, int sr, int pcoff)
@@ -125,22 +139,28 @@ int update_monitor (UL *regs, int sr, int pcoff)
 	static UL lv=0;
 	UL u,s;
 
-	/* Question? Would an OR test be optimised faster?
-       ** need stateful logic here? what does in_monitor mean?*/
+       /* I have sinned and used a goto!  */
+	if (bkpt)
+	  {
+	    if (TRIM(pcoff) == TRIM(bkpt))
+	      goto enter_monitor;
+	  }
+	if (watch)
+	  {
+	    if (LM_UW(MEM(watch)) != watch_val )
+	      goto enter_monitor;
+	  }
+
 	if (in_monitor)
 	  {
 	    if (count-- > 0) return (exit_val);
 	 }
-	else if (watch || bkpt)
-	  {
-	    if (TRIM(pcoff) != TRIM(bkpt) &&
-		LM_UW(MEM(watch)) == watch_val ) return (exit_val);
-	  }    
 	else
 	  {
 	    return (exit_val);
-	  }/* endif !in_monitor */ 
+	  }
 
+ enter_monitor:
 
 	fprintf (stderr,"Entering Monitor after %d instructions\n",instruction_count);
 
@@ -148,7 +168,7 @@ int update_monitor (UL *regs, int sr, int pcoff)
 	monitor=1;
 	count = 0;
 	dump_registers(regs,sr);
-	dissassemble (pcoff,10);
+	current_pos=dissassemble (pcoff,10);
 
 	while (monitor)
 	  {
@@ -159,6 +179,12 @@ int update_monitor (UL *regs, int sr, int pcoff)
 
 	    switch (*(cmdline->cmdlist[0]))
 	      {
+	      case 'A':
+	      case 'a':
+		{
+		  dump_code(cmdline);
+		  break;
+		}
 	      case 'B':
 	      case 'b':
 		{
@@ -224,6 +250,8 @@ int update_monitor (UL *regs, int sr, int pcoff)
 		break;
 	      } /* End Switch */
 
+	    free (cmdline); /* Lets not leak memory! */
+
 	  } /* End While */
 	return (exit_val);
 }
@@ -235,7 +263,7 @@ int update_monitor (UL *regs, int sr, int pcoff)
 */
 
 
-command  *parse_command(char *cmd)
+static command  *parse_command(char *cmd)
 {
   char *word = NULL;
   char *sep = " ";
@@ -259,7 +287,45 @@ command  *parse_command(char *cmd)
 }
 		
 
+/*
+** Evaluate a symbol to an address, or an address string to address
+**
+** For reasons of symplicity all symbols start with @
+**
+** Returning zero probably means it didn't work.
+**
+** TODO: PC, SP, real addresses (inc 0x forms)
+** Wishlist: Imported .map file symbols?
+*/
 
+static int eval_symbol (char symbol[])
+{
+  int address=0;
+
+  fprintf (stderr,"Symbol to eval %s\n",symbol);
+
+  if (symbol[0]=='@')
+    {
+      if (symbol[1]=='A' || symbol[1]=='a')
+	{
+	  address = AREG(symbol[2]-'0');
+	}
+      else if (symbol[1]=='D' || symbol[1]=='d')
+	{
+	  address = DREG(symbol[2]-'0');
+	}
+      else
+	{
+	  fprintf (stderr,"Scanning map file (if such a thing existed!)\n");
+	}
+    }
+  else /* assume its just a numeric address */
+    {
+      address = strtol(symbol,NULL,0);
+    }
+  fprintf (stderr,"Evaluated address = %x\n",address);
+  return (address);
+}
 
 /* 
 ** Dump Help for Debugger
@@ -268,14 +334,15 @@ command  *parse_command(char *cmd)
 
 static void print_help (void)
 {
-  fprintf (stdout,"b <hex address> - break when pc=address\n");
-  fprintf (stdout,"b <vbl|gemdos|exception> - break on condition\n");
-  fprintf (stdout,"bc  - clear conditional breaks\n");
-  fprintf (stdout,"r n - run n instructions\n");
-  fprintf (stdout,"s   - step (one instruction)\n");
-  fprintf (stdout,"g   - go (continue running)\n");
-  fprintf (stdout,"w <address> - break if address contents change\n");
-  fprintf (stdout,"q   - quit (leave STonX)\n");
+  fprintf (stdout,"a [address] [count]         - dissasemble address\n");
+  fprintf (stdout,"b <hex address>             - break when pc=address\n");
+  fprintf (stdout,"b <vbl|gemdos|exception>    - break on condition\n");
+  fprintf (stdout,"bc                          - clear conditional breaks\n");
+  fprintf (stdout,"r n                         - run n instructions\n");
+  fprintf (stdout,"s                           - step (one instruction)\n");
+  fprintf (stdout,"g                           - go (continue running)\n");
+  fprintf (stdout,"w <address>                 - break if address contents change\n");
+  fprintf (stdout,"q                           - quit (leave STonX)\n");
 }
 
 /*
@@ -298,6 +365,7 @@ static dump_bytes (int ptr, int count)
 **
 ** TODO:
 **  1. Proper decode of the SSR (In Hex?!)
+**  2. Fix to use register macros
 */
 
 static void dump_registers (UL *regs, int sr)
@@ -355,6 +423,50 @@ static void dump_registers (UL *regs, int sr)
 
 static void dump_memory (command *cmd)
 {
+  int address=0;
+  int count=20;
+
+  if (cmd->args>1)
+    {
+      address = eval_symbol (cmd->cmdlist[1]);
+      if (cmd->args>2)
+	{
+	  count = strtol (cmd->cmdlist[2],NULL,16);
+	}
+      dump_bytes (address,count);
+    }
+  else
+    {
+      fprintf (stderr,"Need at least an address!\n");
+    }
+
+}
+
+/*
+** Format STMON> a [address|symbol] [length]
+**
+** Dump code (dissassemble n instructions)
+** from address or last position.
+*/
+
+static void dump_code (command *cmd)
+{
+  int address=0;
+  int count=20;
+
+  if (cmd->args>1)
+    {
+      address = eval_symbol (cmd->cmdlist[1]);
+      if (cmd->args>2)
+	{
+	  count = strtol (cmd->cmdlist[2],NULL,16);
+	}
+      dissassemble(address,count);
+    }
+  else
+    {
+      dissassemble(current_pos,count);
+    }
 
 }
 
@@ -397,9 +509,15 @@ static void set_breakpoint (command *cmd)
 	  fprintf (stderr, "Setting break on next EXCEPTION\n");
 	  signal_break = signal_break | GENERAL_EXCEPTION;
 	}
+      else if (EQ(cmd->cmdlist[1],"gemdos"))
+	{
+	  fprintf (stderr, "Setting break on next GEMDOS call\n");
+	  signal_break = signal_break | GEMDOS;
+	}
+
       else /* assume its an address and try to parse it */
 	{
-	  bkpt = strtol (cmd->cmdlist[1],NULL,16);
+	  bkpt = eval_symbol (cmd->cmdlist[1]);
 	  fprintf (stderr, "Breakpoint set at %x\n", bkpt);
 	}
       in_monitor=1;
@@ -424,19 +542,11 @@ static void set_watch (command *cmd)
     }
   else
     {
-      if (*cmd->cmdlist[1]=='@')
-	{
-	  /* eval register */
-	}
-      else
-	{
-	  watch = strtol (cmd->cmdlist[1],NULL,16);
-	  watch_val = LM_UW(MEM(watch));
-	  fprintf (stderr, "Watch set at %x, value currently %x\n", watch,watch_val);
-	}
+      watch = eval_symbol (cmd->cmdlist[1]);
+      watch_val = LM_UW(MEM(watch));
+      fprintf (stderr, "Watch set at %x, value currently %x\n", watch,watch_val);
       in_monitor=1;
     }
-
 }
 
 /*
@@ -482,7 +592,7 @@ static int dissassemble (int pos, int count)
   // Free memory!
   free(string);
 
-  return;
+  return(pos);
 	
 }
 
