@@ -1,3 +1,7 @@
+2001-07-24 Alex Bennee
+	* Fixed uninitialised pointer is FS array causing crash when setting up multiple
+	floppy disk drives.
+
 2001-07-21 Alex Bennee, STonX-6.7.4
 	* Updated tweaks and fixes to configure/Makefile and new rpm building .spec
 
