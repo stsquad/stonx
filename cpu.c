@@ -151,7 +151,7 @@ W LS_W (UL s)
 	{
 #if PROTECT_ROM
 #if SMALL
-		if (s > 0x800 && s <= romstart2) )
+		if (s > 0x800 && s <= romstart2 )
 		{
 			BUS_ERROR(s, 1);	/* bus err or addr. err 1st?*/
 		}
@@ -563,7 +563,7 @@ void ex_trap(int n)
       case T_TRAP_BIOS:
 	  init_cookie();
 	  nw = LM_UL(EXCEPTION_VECTOR(n));
-#if 0
+#if NATIVE_BIOS
 	  if ( verbose )
 	      fprintf(stderr,"BIOS(%02x) -> %lx\n", LM_W(MEM(SP)), nw);
 	  if (Bios())
@@ -572,7 +572,7 @@ void ex_trap(int n)
 		  fprintf(stderr,"Bios %d done as native\n",LM_W(MEM(SP)));
 	      return;
 	  }
-#endif
+#endif  /* NATIVE_BIOS */
 	  break;
       case T_TRAP_XBIOS:
 	  nw = LM_UL(EXCEPTION_VECTOR(n));

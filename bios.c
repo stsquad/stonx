@@ -3,7 +3,14 @@
  * STonX is free software and comes with NO WARRANTY - read the file
  * COPYING for details
  */
+
+/* The functions in this file allow STonX to emulate the TOS BIOS */
+/* natively - it is disabled by default in options.h              */
+
 #include "defs.h"
+
+#if NATIVE_BIOS      /* Only include this file if really necessary */
+
 #include "mem.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -110,6 +117,7 @@ static int Kbshift(W mode)
 	return FALSE;
 }
 
+
 int Bios(void)
 {
 	W n;
@@ -166,3 +174,4 @@ int Bios(void)
 }
 
 
+#endif /* NATIVE_BIOS */

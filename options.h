@@ -106,9 +106,14 @@
 /* Set this to 1, if you want joystick support */
 #define JOYSTICK 1
 #else
-#error NoJoystick
 #define JOYSTICK 0
 #endif
+
+/* Set this to 1 if you want STonX to emulate natively the BIOS.   */
+/* - This is untested and as long as you are using a real tos.img, */
+/* there is no need for this, so let it set at 0                   */
+#define NATIVE_BIOS 0
+
 
 /*
  * Don't change following tests 
