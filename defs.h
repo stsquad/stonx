@@ -79,15 +79,11 @@ typedef unsigned char UB;
 
 #endif /* INTS_8_16_32 */
 
-#define BSIZE 1
-#define UBSIZE 1
-#define WSIZE 2
-#define UWSIZE 2
-#define LSIZE 4
-#define ULSIZE 4
+
 #define	BMASK	0xff
 #define WMASK	0xffff
 #define LMASK	0xffffffff
+
 
 #if PROFILE
 extern int prof_op;
