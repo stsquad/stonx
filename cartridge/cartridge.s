@@ -26,11 +26,11 @@
 
 cart_beg:
 	dc.l 0xabcdef42
-	dc.l 0
+	dc.l 0                   | cartridge of type 0
 	dc.l init+0x08000000     | cartridge init (24 bit + 1 byte)
 	dc.l start               | program to execute
-	dc.w 0
-	dc.w 0
+	dc.w 0                   | time (unused)
+	dc.w 0                   | date (unused)
 	dc.l cart_end-init       | calculated program length
 	.ascii "UNIXDISK.ROM"
 	dc.w 0
@@ -40,9 +40,9 @@ cart_beg:
 | init - Initialization of STonX native functions
 
 init:	
-|	pea initmsg
-|	bsr print
-|	addq #4,sp
+	pea initmsg
+	bsr print
+	addq #4,sp
 
         		| set _bootdev, _nflops and _drvbits
 	dc.w 0xa0ff     | jump native 
@@ -74,6 +74,7 @@ init:
                     
 	rts
 
+	.even
 initmsg:
 	.ascii "CART: init - cartridge initialization\n"
 	dc.w 0
@@ -151,6 +152,7 @@ disk_bpb:
 |	pea bpbmsg
 |	bsr print
 |	addq #4,sp
+
 	dc.w 0xa0ff     | jump native 
 	dc.l 2
 	rts
@@ -202,52 +204,71 @@ unixfs:
 
 	dc.w 0xa0ff
 	dc.l 5
-	bvs.s pexec
-	bne.s go_oldgemdos
+	bvs.s pexec     	| V bit = 1
+	bne.s go_oldgemdos      | Z bit = 0
 	rte
 go_oldgemdos:
-	move.l old_gemdos,a0
+|	pea oldgemdosmsg	
+|	bsr print
+|	addq #4,sp
+
+	move.l old_gemdos,a0    | fallback to TOS
 	jmp (a0)
 pexec:
-	lea 8(sp),a0
-	btst #5,(sp)
-	bne.s s_ok
+	lea 8(sp),a0           
+	btst #5,(sp)           
+	bne.s s_ok             
 	move.l usp,a0
 	addq #2,a0
 s_ok:
-	tst (a0)
-	bne.s no_0                 
-	move.l a6,-(sp)
-	move.l a0,a6
-	bsr find_prog
-	bsr pexec5
-	bsr reloc
-	clr.l 2(a6)
-	clr.l 10(a6)
-	move.l d0,6(a6)
-	move #6,(a6)
-	move.l (sp)+,a6
-	bra go_oldgemdos
-no_0:
-	cmp #3,(a0)
-	bne.s go_oldgemdos
-	move.l a6,-(sp)
-	move.l a0,a6
-	bsr find_prog
-	bsr pexec5
-	bsr reloc
+	tst (a0)                | is the pexec mode = 0?
+	bne.s mode3             | if mode not 0 (= load + go)
+        
+        			
+mode0:                          | load, relocate and start program
+	move.l a6,-(sp)         | save a6
+
+	move.l a0,a6            | copy pointer to pexec arguments
+	bsr find_prog           | does program exist
+	bsr pexec5              | create a basepage for new process
+	bsr reloc               | relocate program
+	clr.l 2(a6)             | clear filename
+	clr.l 10(a6)            | clear environment string
+	move.l d0,6(a6)         | copy command arguments pointer
+
+	move #4,(a6)		| pexec mode 4 for exec. prepared program
+
+	move.l (sp)+,a6         | restore a6
+        			| after finding, basepage creation and
+	bra go_oldgemdos        |   relocation start prepared program
+
+mode3:                          | just load and relocate program
+	cmp #3,(a0)             | is the pexec mode = 3?
+	bne.s go_oldgemdos      | if not, return (should never happen)
+
+	move.l a6,-(sp)         | save a6
+
+	move.l a0,a6            | copy pointer to pexec arguments
+	bsr find_prog           | does program exist
+	bsr pexec5              | create a basepage for new process
+	bsr reloc               | relocate program
 gohome:
-	move.l (sp)+,a6
+	move.l (sp)+,a6         | restore a6
 	rte
-find_prog:
-	move #0x2f,-(sp)
+        
+        
+        
+|============================================================================
+| find the program using GEMDOS functions Fgetdta() and Fsfirst(fnam, attr)
+find_prog:    
+	move #0x2f,-(sp)        | Fgetdta()
 	trap #1
 	addq #2,sp
-	move.l d0,a0
+	move.l d0,a0            | Pointer to DTA in a0
+	move.l (a0)+,-(sp)      | copy DTA to stack
 	move.l (a0)+,-(sp)
-	move.l (a0)+,-(sp)
-	move.l (a0)+,-(sp)
-	move.l (a0)+,-(sp)
+	move.l (a0)+,-(sp)      | this needs a valid basepage setting
+	move.l (a0)+,-(sp)      | in gemdos 
 	move.l (a0)+,-(sp)
 	move.l (a0)+,-(sp)
 	move.l (a0)+,-(sp)
@@ -256,17 +277,17 @@ find_prog:
 	move.l (a0)+,-(sp)
 	move.l (a0)+,-(sp)
 	move.l a0,-(sp)
-	move #0x17,-(sp)
-	move.l 2(a6),-(sp)
-	move #0x4e,-(sp)
+	move #0x17,-(sp)        | get attributes
+	move.l 2(a6),-(sp)      | get filename
+	move #0x4e,-(sp)        | Fsfirst(fnam, attr)
 	trap #1
 	addq #8,sp
 	move.l (sp)+,a0
+	move.l (sp)+,-(a0)	| restore 44 bytes DTA buffer
+	move.l (sp)+,-(a0)      | from stack
 	move.l (sp)+,-(a0)
 	move.l (sp)+,-(a0)
-	move.l (sp)+,-(a0)
-	move.l (sp)+,-(a0)
-	move.l (sp)+,-(a0)
+	move.l (sp)+,-(a0)      
 	move.l (sp)+,-(a0)
 	move.l (sp)+,-(a0)
 	move.l (sp)+,-(a0)
@@ -279,48 +300,51 @@ find_prog:
 	bra.s gohome
 findprog_ok:
 	rts
-pexec5:
-	move.l 10(a6),-(sp)
-	move.l 6(a6),-(sp)
-	clr.l -(sp)
-	move #5,-(sp)
-	move #0x4b,-(sp)
+pexec5: 			| pexec mode 5 (allocate basepage)
+	move.l 10(a6),-(sp)     | get environment
+	move.l 6(a6),-(sp)      | get programm arguments
+	clr.l -(sp)             | no command name
+	move #5,-(sp)           | pexec mode=5 (allocate basepage)
+	move #0x4b,-(sp)        | call pexec
 	trap #1
 	lea 16(sp),sp
-	tst.l d0
-	bmi.s pexecerr
+	tst.l d0                | return code...
+	bmi.s pexecerr          | allocation unsuccessful
 	rts
 pexecerr:
 	addq #4,sp
-	bra.s gohome
-reloc:
+	bra gohome
+        
+reloc:                          | load and relocate the code
 	movem.l a3-a5/d6-d7,-(sp)
 	move.l d0,a5
 	clr -(sp)
-	move.l 2(a6),-(sp)
-	move #0x3d,-(sp)
+	move.l 2(a6),-(sp)      | use filename and
+	move #0x3d,-(sp)        | file open 
 	trap #1
 	addq #8,sp
-	move.l d0,d6
+	move.l d0,d6            | copy file-handle to d6
+
 	move.l a5,-(sp)
-	add.l #228,(sp)
-	pea 0x1c.w
-	move d6,-(sp)
-	move #0x3f,-(sp)
+	add.l #228,(sp)         | buffer for file-header
+	pea 0x1c.w              | get just file-header
+	move d6,-(sp)           | put file-handle on stack
+	move #0x3f,-(sp)        | read just file-header from file
 	trap #1
 	lea 12(sp),sp
 | check size!!
-	move.l a5,-(sp)
-	add.l #256,(sp)
-	pea 0x7fffffff
-	move d6,-(sp)
-	move #0x3f,-(sp)
+	move.l a5,-(sp)         | save a5
+	add.l #256,(sp)         |
+	pea 0x7fffffff          | get whole file
+	move d6,-(sp)           | put file-handle on stack
+	move #0x3f,-(sp)        | file read
 	trap #1
 	lea 12(sp),sp
-	move d6,-(sp)
-	move #0x3e,-(sp)
+	move d6,-(sp)           | put file-handle on stack
+	move #0x3e,-(sp)        | file close
 	trap #1
 	addq #4,sp
+
 	lea 8(a5),a4
 	move.l a5,d0
 	add.l #0x100,d0
@@ -374,6 +398,9 @@ gemdosmsg:
 	.ascii "GEMDOS call\n"
 	dc.w 0
 
+oldgemdosmsg:
+	.ascii "GEMDOS fallback to TOS routines ...\n"
+	dc.w 0
 
 
 |============================================================================
@@ -499,6 +526,9 @@ t_quit:
 	dc.w 0
 t_return:
 	.ascii "Return to emulator"
+	dc.w 0
+t_test:
+	.ascii "CART: ========= TEST ============"
 	dc.w 0
 i_on:
 	dc.l 0x1b700000

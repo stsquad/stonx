@@ -32,6 +32,21 @@ unixfs: This routine is used to support loading code from the native
 unix filesystem. I'm not shure, but I think it is needed to handle
 filenames in upper/lower case.
 
+StonX checks natively, if the mode is 0 or 3. If so, CC-register
+flags are set so, that back in the cartridge we can go on.
+
+pexec: Here we check, if is is mode 0=load and go, or not. If so, the
+cartridge first tries to find the program. Therefore it gets and uses
+the DTA and the GEMDOS function Fsfirst to find the file in the
+filesystem. After that a new basepage is allocated by calling pexec
+again with mode=5. If this is successful, the program is loaded and
+relocated. Now execution goes back to the original GEMDOS, where the
+prepared program really is started.
+
+Nearly the same happens, if the mode is 3, but the program
+is not executed in the end. A use for this would e.g. be debugging.
+
+
 offset 0xff8:
 
 new_trap2: If we use the native vdi, the trap #2 is not sensed by the
