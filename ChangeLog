@@ -1,4 +1,6 @@
-
+2001-07-16 Alex Bennee
+	* Fixed re-init of native gemdos that was causing TOS1.0 to fail
+	
 2001-07-04 Alex Bennee
 	* Updated and Improved monitor functionality
 
